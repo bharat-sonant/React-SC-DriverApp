@@ -7,6 +7,7 @@ import CalculationScreen from './Screens/CalculationScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Home from './BottomTabScreens/Home';
 import LogOut from './BottomTabScreens/logOut';
+import Splash from './Screens/Splash';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 function App() {
@@ -39,7 +40,8 @@ function App() {
   };
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="Splash">
+        <Stack.Screen name='Splash' component={Splash} options={{headerShown:false}}/>
         <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
         <Stack.Screen name="CalculationScreen" component={CalculationScreen} options={{ headerShown: false }} />
         <Stack.Screen name="BottomTabScreen" component={BottomTabScreen} options={{ headerShown: false }} />

@@ -1,5 +1,5 @@
 import { ActivityIndicator, Alert, BackHandler, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 // import { ref } from 'firebase/database';
 import { database } from '../Firebase';
 import { child, get, ref } from 'firebase/database';
@@ -7,9 +7,6 @@ import { TextInput } from 'react-native-gesture-handler';
 import { NavigationAction, useNavigation } from '@react-navigation/native';
 import { useBackHandler } from '@react-native-community/hooks';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
-
 const Login = () => {
     const [mobileNumber, setMobileNumber] = useState('8786786691');
     const [pin, setPin] = useState('302021');
@@ -35,8 +32,6 @@ const Login = () => {
             alert("Enter Mobile Number")
         } else if (pin.length <= 0) {
             alert("Enter Your Pin");
-        } else if (mobileNumber.length < 10) {
-            alert("Enter 10 Digit Number")
         }
         get(child(databasePath, "Drivers")).then((snapshot) => {
             if (snapshot.exists) {
@@ -51,7 +46,7 @@ const Login = () => {
                 })
                 if (flag === 1) {
                     AsyncStorage.setItem("userNumber", mobileNumber);
-                    navigation.navigate("BottomTabScreen", {"userNumber": mobileNumber});
+                    navigation.navigate("BottomTabScreen", { "userNumber": mobileNumber });
                     setShow(false)
                 } else {
                     alert("Check Number and Password")
