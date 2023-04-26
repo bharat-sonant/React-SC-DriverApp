@@ -55,19 +55,22 @@ const Login = () => {
 
         })
     }
+    //https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS42EsAolPV2NGnQO1X87f7uSZGobRNUO7SiW-qVaCLlTzmqkuuKtq8RogeO8WFJawZXxQ&usqp=CAU
+    //https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBBpjKV5f6Bu_km648nAq7du23ZdxgvAojNzs3RK79qG1p35IAmlVr0xVEC3-iYiXTpYw&usqp=CAU
+    //https://www.shutterstock.com/image-vector/password-security-symbol-lock-icon-260nw-782799754.jpg
     return (
         <View style={styles.container}>
             <ActivityIndicator style={styles.ActivityIndicatorLayout} size={'large'} animating={show} color={'black'} />
-            <Image style={styles.image} source={{ uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS42EsAolPV2NGnQO1X87f7uSZGobRNUO7SiW-qVaCLlTzmqkuuKtq8RogeO8WFJawZXxQ&usqp=CAU" }} />
+            <Image style={styles.image} source={require('../Images/logo.jpg')} />
             <View style={{ flexDirection: 'row', width: "70%", borderWidth: 1, borderRadius: 15, borderColor: 'grey', marginTop: 20, paddingLeft: 5, paddingTop: 8, paddingBottom: 8 }} >
-                <Image style={{ width: 35, height: 35, borderRadius: 45, marginLeft: 3, marginRight: 10, marginTop: 5 }} source={{ uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBBpjKV5f6Bu_km648nAq7du23ZdxgvAojNzs3RK79qG1p35IAmlVr0xVEC3-iYiXTpYw&usqp=CAU" }} />
+                <Image style={{ width: 35, height: 35, borderRadius: 45, marginLeft: 3, marginRight: 10, marginTop: 5 }} source={require('../Images/userlogo.jpg')} />
                 <TextInput keyboardType="numeric" maxLength={10} placeholder='Emp Id' style={{ width: "100%", color: 'black' }}
                     value={mobileNumber}
                     onChangeText={setMobileNumber}
                 />
             </View>
             <View style={{ flexDirection: 'row', width: "70%", borderWidth: 1, borderRadius: 15, borderColor: 'grey', marginTop: 20, paddingLeft: 5, paddingTop: 8, paddingBottom: 8 }} >
-                <Image style={{ width: 35, height: 35, borderRadius: 40, marginRight: 10, marginTop: 5, marginLeft: 3 }} source={{ uri: "https://www.shutterstock.com/image-vector/password-security-symbol-lock-icon-260nw-782799754.jpg" }} />
+                <Image style={{ width: 35, height: 35, borderRadius: 40, marginRight: 10, marginTop: 5, marginLeft: 3 }} source={require('../Images/lock.jpg')} />
                 <TextInput placeholder='Password' style={{ width: "100%", color: 'black' }}
                     value={pin}
                     onChangeText={setPin}

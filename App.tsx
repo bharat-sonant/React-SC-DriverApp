@@ -3,16 +3,18 @@ import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Login from './Screens/Login';
-import CalculationScreen from './Screens/CalculationScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Home from './BottomTabScreens/Home';
 import LogOut from './BottomTabScreens/logOut';
 import Splash from './Screens/Splash';
+
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 function App() {
+  
   const BottomTabScreen = () => {
     return (
+      
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
@@ -43,7 +45,6 @@ function App() {
       <Stack.Navigator initialRouteName="Splash">
         <Stack.Screen name='Splash' component={Splash} options={{headerShown:false}}/>
         <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
-        <Stack.Screen name="CalculationScreen" component={CalculationScreen} options={{ headerShown: false }} />
         <Stack.Screen name="BottomTabScreen" component={BottomTabScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
