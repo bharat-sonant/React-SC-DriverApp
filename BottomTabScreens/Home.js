@@ -200,12 +200,7 @@ const Home = () => {
 
   return (
     <View style={{ flex: 1 }}>
-       <View>
-      <Text style={{color:'black'}}>Count: {count}</Text>
-    </View>
-     <Text style={{color:'black'}}>
-      {latitude} 
-     </Text>
+       
       <ActivityIndicator style={styles.ActivityIndicatorLayout} size={"large"} animating={show} color={'black'} />
       {
         webViewLoaded && loginUserNumber && (
