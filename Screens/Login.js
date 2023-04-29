@@ -1,4 +1,4 @@
-import { ActivityIndicator, Alert, BackHandler, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, BackHandler, PermissionsAndroid, Linking, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 // import { ref } from 'firebase/database';
 import { database } from '../Firebase';
@@ -8,11 +8,76 @@ import { NavigationAction, useNavigation } from '@react-navigation/native';
 import { useBackHandler } from '@react-native-community/hooks';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const Login = () => {
-    const [mobileNumber, setMobileNumber] = useState('8786786691');
-    const [pin, setPin] = useState('302021');
+    const [mobileNumber, setMobileNumber] = useState('7878798988');
+    const [pin, setPin] = useState('5678');
     const [show, setShow] = useState(false);
     const databasePath = ref(database);
     const navigation = useNavigation();
+    useEffect(() => {
+        locationPermission();
+    });
+    const openSettings = async () => {
+        try {
+            await Linking.openSettings();
+        } catch (err) {
+            console.warn(err);
+        }
+    };
+    async function locationPermission() {
+        try {
+            const result = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+
+            );
+            if (result === PermissionsAndroid.RESULTS.GRANTED) {
+                locationPermissionForBackGround()
+            } else {
+                Alert.alert(
+                    'Location Permission Required',
+                    'App needs access to your Location to read files. Please go to app settings and grant permission.',
+                    [
+                        {
+                            text: 'Cancel', style: 'cancel'
+                        },
+                        { text: 'Open Settings', onPress: openSettings },
+                    ],
+                    { cancelable: false }
+                );
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    async function locationPermissionForBackGround() {
+        try {
+            const result = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+                {
+                    title: 'Geolocation Permission',
+                    message: 'Can we access your location?',
+                    buttonNegative: 'Cancel',
+                    buttonPositive: 'OK',
+                },
+                { cancelable: false }
+            );
+            if (result === PermissionsAndroid.RESULTS.GRANTED) {
+                console.log("Access");
+            } else {
+                Alert.alert(
+                    'Location Permission Required',
+                    'App needs access to your Location to read files. Please go to app settings and grant permission.',
+                    [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Open Settings', onPress: openSettings },
+                    ],
+                    { cancelable: false }
+                );
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     let flag = 0;
     function backActionHandler() {
         Alert.alert("", "Are sure to exit the Application", [{
@@ -37,7 +102,7 @@ const Login = () => {
             if (snapshot.exists) {
                 snapshot.forEach((value) => {
                     const driverMobileNumber = value.child("mobile").val();
-                    const driverPin = value.child("pin").val()
+                    const driverPin = value.child("accessPin").val()
                     if (driverMobileNumber === mobileNumber && driverPin === pin) {
                         flag = 1;
                     } else {
@@ -45,6 +110,7 @@ const Login = () => {
                     }
                 })
                 if (flag === 1) {
+                    console.log("hey");
                     AsyncStorage.setItem("userNumber", mobileNumber);
                     navigation.navigate("BottomTabScreen", { "userNumber": mobileNumber });
                     setShow(false)
