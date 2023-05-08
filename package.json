@@ -16,10 +16,7 @@
     "@react-native-community/hooks": "^3.0.0",
     "@react-navigation/bottom-tabs": "^6.5.7",
     "@react-navigation/native": "^6.1.6",
-<<<<<<< HEAD
-=======
     "@react-navigation/native-stack": "^6.9.12",
->>>>>>> ef42fbb8c190170c1a4739efe70e60bac303ac7a
     "@react-navigation/stack": "^6.3.16",
     "firebase": "^9.19.1",
     "moment": "^2.29.4",
