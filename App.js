@@ -13,7 +13,7 @@ const Tab = createBottomTabNavigator();
 const App = () => {
   const BottomTabScreen = () => {
     return (
-      <Tab.Navigator>
+      <Tab.Navigator screenOptions={{headerShown: false}}>
         <Tab.Screen name="Home" component={Home} />
         <Tab.Screen name="LogOut" component={Logout} />
       </Tab.Navigator>

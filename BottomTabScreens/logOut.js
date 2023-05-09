@@ -1,20 +1,21 @@
-import { View, Text } from 'react-native'
-import React , {useEffect} from 'react'
-import { useNavigation } from '@react-navigation/native';
+import {View, Text, BackHandler} from 'react-native';
+import React, {useEffect} from 'react';
+import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackgroundService from 'react-native-background-actions';
 
-const LogOut = (props) => {
+const LogOut = props => {
   const navigation = useNavigation();
-  useEffect(()=>{
+  useEffect(() => {
     BackgroundService.stop();
     AsyncStorage.clear();
-    props.navigation.replace("Login");
-  },[]);
+    // props.navigation.replace("Login");
+    BackHandler.exitApp();
+  }, []);
   return (
     <View>
-      <Text style={{color:'black'}}>LogOut</Text>
+      <Text style={{color: 'black'}}>Log out</Text>
     </View>
-  )
-}
-export default LogOut
+  );
+};
+export default LogOut;

@@ -20,6 +20,7 @@ import {get, ref, set, update} from 'firebase/database';
 import {database} from '../Firebase';
 import RNAndroidSettingsTool from 'react-native-android-settings-tool';
 import moment from 'moment';
+import {getDistance} from 'geolib';
 
 const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time));
 
@@ -48,17 +49,48 @@ const Home = ({route, driverId}) => {
   const getData = async () => {
     try {
       const value = await AsyncStorage.getItem('driverId');
-      if (value !== null) {
+      const driverUsername = await AsyncStorage.getItem('username');
+      if (value !== null && driverUsername !== null) {
         setDriverId(value);
-        requestForPermission();
+        requestForPermission(value);
+        sendDatatoWeb(value, driverUsername);
       }
     } catch (e) {
       console.log(e);
     }
   };
 
+  function sendDatatoWeb(value, driverUsername) {
+    const timeInterval = setTimeout(() => {
+      webviewRef.current?.injectJavaScript(
+        getInjectableJSMessage({
+          driverId: value,
+          driverUsername: driverUsername,
+        }),
+      );
+    }, 1000);
+
+    setTimeout(() => {
+      clearInterval(timeInterval);
+    }, 2000);
+
+    return () => {
+      clearInterval(timeInterval);
+    };
+  }
+
   useEffect(() => {
     getData();
+
+    // setTimeout(() => {
+    //   webviewRef.current?.injectJavaScript(
+    //     getInjectableJSMessage({
+    //       driverId: 'value',
+    //       driverUsername: 'driverUsername',
+    //     }),
+    //   );
+    // }, 2000);
+
     // const subscription = AppState.addEventListener('change', nextAppState => {
     //   if (
     //     appState.current.match(/inactive|background/) &&
@@ -81,7 +113,7 @@ const Home = ({route, driverId}) => {
     // };
   }, []);
 
-  const requestForPermission = async () => {
+  const requestForPermission = async value => {
     const allLocation = await PermissionsAndroid.requestMultiple([
       PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -93,7 +125,7 @@ const Home = ({route, driverId}) => {
         result['android.permission.ACCESS_BACKGROUND_LOCATION'] === 'granted'
       ) {
         console.log('granted');
-        fetchLocation();
+        fetchLocation(value);
       } else if (
         result['android.permission.ACCESS_COARSE_LOCATION'] &&
         result['android.permission.ACCESS_FINE_LOCATION'] &&
@@ -111,7 +143,7 @@ const Home = ({route, driverId}) => {
     });
   };
 
-  const fetchLocation = () => {
+  const fetchLocation = value => {
     const timeInterId = setInterval(() => {
       Geolocation.getCurrentPosition(
         position => {
@@ -122,7 +154,7 @@ const Home = ({route, driverId}) => {
           setInterval(() => {
             let latitude = parseFloat(position.coords.latitude);
             let longitude = parseFloat(position.coords.longitude);
-            sendDataToDatabase(latitude, longitude);
+            sendDataToDatabase(latitude, longitude, value);
           }, 2000);
         },
         error => {
@@ -179,7 +211,7 @@ const Home = ({route, driverId}) => {
     },
   };
 
-  function sendDataToDatabase(latitude, longitude) {
+  function sendDataToDatabase(latitude, longitude, value) {
     let date = moment(new Date()).format('yyyy-MM-DD');
     let month = moment().format('MMMM');
     let year = moment().format('YYYY');
@@ -193,134 +225,64 @@ const Home = ({route, driverId}) => {
       time = hour;
       latLngArr.push(latlng);
     }
-    console.log(latlng);
-    set(
-      ref(
-        database,
-        'TravelPath/' +
-          driverID +
-          '/' +
-          year +
-          '/' +
-          month +
-          '/' +
-          date +
-          '/' +
-          hour,
-      ),
-      {
-        latlng: latLngArr.toString(),
-      },
+
+    var slatVal = latLngArr[0];
+    var dlatVal = latLngArr[latLngArr.length - 1];
+    var slat = slatVal.split(',')[0];
+    var slng = slatVal.split(',')[1];
+    var dlat = dlatVal.split(',')[0];
+    var dlng = dlatVal.split(',')[1];
+    var slatitude = slat.replace('(', '');
+    var slongutitue = slng.replace(')', '');
+    var dlatitude = dlat.replace('(', '');
+    var dlongutitue = dlng.replace(')', '');
+    // console.log("SLatLng",slatitude," ",slongutitue);
+    // console.log("DLatLng",dlatitude," ",dlongutitue);
+    var dis = getDistance(
+      {latitude: slatitude, longitude: slongutitue},
+      {latitude: dlatitude, longitude: dlongutitue},
     );
+    // console.log(dis);
+
+    // console.log(latlng, value);
+    // set(
+    //   ref(
+    //     database,
+    //     'TravelPath/' +
+    //       value +
+    //       '/' +
+    //       year +
+    //       '/' +
+    //       month +
+    //       '/' +
+    //       date +
+    //       '/' +
+    //       hour,
+    //   ),
+    //   {
+    //     distance_in_meter: dis,
+    //     latlng: latLngArr.toString(),
+    //   },
+    // );
   }
 
-  // const locationPermission = async () => {
-  //   try {
-  //     const result = await PermissionsAndroid.request(
-  //       PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
-  //       {
-  //         title: 'Geolocation Permission',
-  //         message: 'Can we access your location?',
-  //         buttonNeutral: 'NEVER_ASK_AGAIN',
-  //         buttonNegative: 'Cancel',
-  //         buttonPositive: 'OK',
-  //       },
-  //     );
-  //     if (result === PermissionsAndroid.RESULTS.GRANTED) {
-  //       console.log('Location Permission Granted.');
-  //     } else if (result === PermissionsAndroid.RESULTS.DENIED) {
-  //       console.log('Location Permission Denied.');
-  //     } else if (result === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
-  //       console.log('Location Permission Denied with Never Ask Again.');
-  //       Alert.alert(
-  //         'Location Permission Required',
-  //         'App needs access to your Location to read files. Please go to app settings and grant permission.',
-  //         [
-  //           {text: 'Cancel', style: 'cancel'},
-  //           {text: 'Open Settings', onPress: openSettings},
-  //         ],
-  //         {cancelable: false},
-  //       );
-  //     }
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // };
-  // const checkLocationPermission = async () => {
-  //   const permission =
-  //     Platform.OS === 'ios'
-  //       ? PERMISSIONS.IOS.LOCATION_ALWAYS
-  //       : PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION;
-
-  //   const status = await check(permission);
-  //   console.log(status);
-  //   if (status === 'granted') {
-  //     console.log('Location permission granted');
-  //   } else if (status === 'denied') {
-  //     Alert.alert(
-  //       'Location Permission Required',
-  //       'Please enable location services in your device settings to use this feature.',
-  //       [
-  //         {
-  //           text: 'Cancel',
-  //           onPress: () => console.log('Cancel Pressed'),
-  //           style: 'cancel',
-  //         },
-  //         {
-  //           text: 'OK',
-  //           onPress: async () => {
-  //             const result = await request(permission);
-  //             if (result === 'granted') {
-  //               console.log('Location permission granted');
-  //             }
-  //           },
-  //         },
-  //       ],
-  //       {cancelable: false},
-  //     );
-  //   }
-  // };
-
-  // function BackHandler() {
-  //   Alert.alert('', 'Are you sure to exit the Application', [
-  //     {
-  //       text: 'No',
-  //       onPress: () => null,
-  //       style: 'cancel',
-  //     },
-  //     {
-  //       text: 'Yes',
-  //       onPress: () => BackHandler.exitApp(),
-  //     },
-  //   ]);
-  //   return true;
-  // }
-  // useBackHandler(BackHandler);
-
-  // function sendDataToWebView() {
-  //   if (webviewRef.current && webViewLoaded) {
-  //     console.log('hey');
-  //     webviewRef.current.postMessage('Data from React Native App', '*');
-  //   }
-  // }
-
-  // const getLocalData = async () => {
-  //   setShow(true);
-  //   const number = await AsyncStorage.getItem('userNumber');
-  //   setLoginUserNumber(number);
-  //   setWebViewLoaded(true);
-  // };
-
-  // const handleWebViewLoad = () => {
-  //   setWebViewLoaded(true);
-  //   setShow(false);
-  // };
+  function getInjectableJSMessage(message) {
+    console.log(message);
+    return `
+      (function() {
+        document.dispatchEvent(new MessageEvent('message', {
+          data: ${JSON.stringify(message)}
+        }));
+      })();
+    `;
+  }
 
   return (
     <View style={{flex: 1}}>
       <WebView
         ref={webviewRef}
-        source={{uri: 'https://webviewpages.web.app/firstscreen'}}
+        // source={{uri: 'https://webviewpages.web.app/firstscreen'}}
+        source={{uri: 'http://192.168.31.248:3000/firstscreen'}}
       />
     </View>
     // <View style={{flex: 1}}>
