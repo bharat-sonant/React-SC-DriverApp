@@ -15,7 +15,7 @@ const App = () => {
     return (
       <Tab.Navigator screenOptions={{headerShown: false}}>
         <Tab.Screen name="Home" component={Home} />
-        <Tab.Screen name="LogOut" component={Logout} />
+        <Tab.Screen name="Ratelist" component={Logout} />
       </Tab.Navigator>
     );
   };

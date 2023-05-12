@@ -21,8 +21,8 @@ import Geolocation from '@react-native-community/geolocation';
 import RNAndroidSettingsTool from 'react-native-android-settings-tool';
 
 const Login = ({ navigation }) => {
-  const [userName, setUserName] = useState('7737823789');
-  const [pass, setPass] = useState('1234');
+  const [userName, setUserName] = useState('Anil');
+  const [pass, setPass] = useState('6767');
   const [usernameError, setUsernameError] = useState('');
   const [passError, setPassError] = useState('');
   const usernameRef = useRef(null);

@@ -37,6 +37,7 @@ const Home = ({route, driverId}) => {
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
   const [show, setShow] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const webviewRef = useRef();
   const [driverID, setDriverId] = useState('');
   const [count, setCount] = useState(0);
@@ -74,43 +75,13 @@ const Home = ({route, driverId}) => {
       clearInterval(timeInterval);
     }, 2000);
 
-    return () => {
-      clearInterval(timeInterval);
-    };
+    // return () => {
+    //   clearInterval(timeInterval);
+    // };
   }
 
   useEffect(() => {
     getData();
-
-    // setTimeout(() => {
-    //   webviewRef.current?.injectJavaScript(
-    //     getInjectableJSMessage({
-    //       driverId: 'value',
-    //       driverUsername: 'driverUsername',
-    //     }),
-    //   );
-    // }, 2000);
-
-    // const subscription = AppState.addEventListener('change', nextAppState => {
-    //   if (
-    //     appState.current.match(/inactive|background/) &&
-    //     nextAppState === 'active'
-    //   ) {
-    //     BackgroundService.stop();
-    //     console.log('App has come to the foreground!');
-    //   } else {
-    //     startBackgroundService();
-    //     console.log('App has come to the background!');
-    //   }
-
-    //   appState.current = nextAppState;
-    //   setAppStateVisible(appState.current);
-    //   console.log('AppState', appState.current);
-    // });
-
-    // return () => {
-    //   subscription.remove();
-    // };
   }, []);
 
   const requestForPermission = async value => {
@@ -148,9 +119,6 @@ const Home = ({route, driverId}) => {
       Geolocation.getCurrentPosition(
         position => {
           clearInterval(timeInterId);
-          // let latitude = position.coords.latitude;
-          // let longitude = position.coords.longitude;
-          // sendDataToDatabase(latitude, longitude);
           setInterval(() => {
             let latitude = parseFloat(position.coords.latitude);
             let longitude = parseFloat(position.coords.longitude);
@@ -172,13 +140,6 @@ const Home = ({route, driverId}) => {
     }, 1000);
   };
 
-  // useEffect(() => {
-  //   // requestLocationPermission();
-  //   // locationPermission();
-  //   // startBackgroundService();
-  //   // getLocalData();
-  //   // registerBackgroundTask()
-  // }, []);
   const veryIntensiveTask = async taskDataArguments => {
     const {delay} = taskDataArguments;
     await new Promise(async resolve => {
@@ -236,13 +197,10 @@ const Home = ({route, driverId}) => {
     var slongutitue = slng.replace(')', '');
     var dlatitude = dlat.replace('(', '');
     var dlongutitue = dlng.replace(')', '');
-    // console.log("SLatLng",slatitude," ",slongutitue);
-    // console.log("DLatLng",dlatitude," ",dlongutitue);
     var dis = getDistance(
       {latitude: slatitude, longitude: slongutitue},
       {latitude: dlatitude, longitude: dlongutitue},
     );
-    // console.log(dis);
 
     // console.log(latlng, value);
     // set(
@@ -282,7 +240,9 @@ const Home = ({route, driverId}) => {
       <WebView
         ref={webviewRef}
         // source={{uri: 'https://webviewpages.web.app/firstscreen'}}
-        source={{uri: 'http://192.168.31.248:3000/firstscreen'}}
+        source={{uri: 'http://192.168.31.248:3000/mobilescreen-calculation'}}
+        renderLoading={ActivityIndicatorElement}
+        startInLoadingState={true}
       />
     </View>
     // <View style={{flex: 1}}>
@@ -305,13 +265,28 @@ const Home = ({route, driverId}) => {
   );
 };
 
+const ActivityIndicatorElement = () => {
+  //making a view to show to while loading the webpage
+  return (
+    <ActivityIndicator
+      color="#009688"
+      size="large"
+      style={styles.activityIndicatorStyle}
+    />
+  );
+};
+
 export default Home;
 
 const styles = StyleSheet.create({
-  ActivityIndicatorLayout: {
-    position: 'absolute',
-    left: '45%',
-    top: '30%',
-    zIndex: 1,
+  // ActivityIndicatorLayout: {
+  //   position: 'absolute',
+  //   left: '45%',
+  //   top: '30%',
+  //   zIndex: 1,
+  // },
+  activityIndicatorStyle: {
+    flex: 1,
+    justifyContent: 'center',
   },
 });
