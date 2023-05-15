@@ -62,7 +62,7 @@ const Home = ({route, driverId}) => {
   };
 
   function sendDatatoWeb(value, driverUsername) {
-    const timeInterval = setTimeout(() => {
+    const timeInterval = setInterval(() => {
       webviewRef.current?.injectJavaScript(
         getInjectableJSMessage({
           driverId: value,
@@ -74,10 +74,6 @@ const Home = ({route, driverId}) => {
     setTimeout(() => {
       clearInterval(timeInterval);
     }, 2000);
-
-    // return () => {
-    //   clearInterval(timeInterval);
-    // };
   }
 
   useEffect(() => {
@@ -236,37 +232,17 @@ const Home = ({route, driverId}) => {
   }
 
   return (
-    <View style={{flex: 1}}>
-      <WebView
-        ref={webviewRef}
-        // source={{uri: 'https://webviewpages.web.app/firstscreen'}}
-        source={{uri: 'http://192.168.31.248:3000/mobilescreen-calculation'}}
-        renderLoading={ActivityIndicatorElement}
-        startInLoadingState={true}
-      />
-    </View>
-    // <View style={{flex: 1}}>
-    //   <ActivityIndicator
-    //     style={styles.ActivityIndicatorLayout}
-    //     size={'large'}
-    //     animating={show}
-    //     color={'black'}
-    //   />
-    //   {webViewLoaded && loginUserNumber && (
-    //     <WebView
-    //       ref={webviewRef}
-    //       source={{uri: 'https://webviewpages.web.app/firstscreen'}}
-    //       style={{flex: 1}}
-    //       scalesPageToFit={true}
-    //       onLoad={handleWebViewLoad}
-    //     />
-    //   )}
-    // </View>
+    <WebView
+      ref={webviewRef}
+      // source={{uri: 'https://webviewpages.web.app/firstscreen'}}
+      source={{uri: 'http://192.168.31.248:3000/mobilescreen-calculation'}}
+      renderLoading={ActivityIndicatorElement}
+      startInLoadingState={true}
+    />
   );
 };
 
 const ActivityIndicatorElement = () => {
-  //making a view to show to while loading the webpage
   return (
     <ActivityIndicator
       color="#009688"
@@ -279,12 +255,6 @@ const ActivityIndicatorElement = () => {
 export default Home;
 
 const styles = StyleSheet.create({
-  // ActivityIndicatorLayout: {
-  //   position: 'absolute',
-  //   left: '45%',
-  //   top: '30%',
-  //   zIndex: 1,
-  // },
   activityIndicatorStyle: {
     flex: 1,
     justifyContent: 'center',

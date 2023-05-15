@@ -6,6 +6,7 @@ import Login from './Screens/Login';
 import Splash from './Screens/Splash';
 import Home from './BottomTabScreens/Home';
 import Logout from './BottomTabScreens/logOut';
+import MapScreen from './BottomTabScreens/MapScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -16,6 +17,7 @@ const App = () => {
       <Tab.Navigator screenOptions={{headerShown: false}}>
         <Tab.Screen name="Home" component={Home} />
         <Tab.Screen name="Ratelist" component={Logout} />
+        <Tab.Screen name="Travel" component={MapScreen} />
       </Tab.Navigator>
     );
   };
