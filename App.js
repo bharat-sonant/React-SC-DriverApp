@@ -5,7 +5,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Login from './Screens/Login';
 import Splash from './Screens/Splash';
 import Home from './BottomTabScreens/Home';
-import Logout from './BottomTabScreens/logOut';
+import Logout from './BottomTabScreens/RateList';
 import MapScreen from './BottomTabScreens/MapScreen';
 
 const Stack = createNativeStackNavigator();

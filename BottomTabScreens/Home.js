@@ -9,6 +9,7 @@ import {
   Button,
   AppState,
   ToastAndroid,
+  Dimensions,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import {WebView} from 'react-native-webview';
@@ -24,7 +25,7 @@ import {getDistance} from 'geolib';
 
 const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time));
 
-const latLngArr = [];
+let latLngArr = [];
 let time = moment().format('hh:mm');
 const Home = ({route, driverId}) => {
   const appState = useRef(AppState.currentState);
@@ -73,7 +74,7 @@ const Home = ({route, driverId}) => {
 
     setTimeout(() => {
       clearInterval(timeInterval);
-    }, 2000);
+    }, 5000);
   }
 
   useEffect(() => {
@@ -175,12 +176,15 @@ const Home = ({route, driverId}) => {
     let hour = moment().format('hh:mm');
 
     let latlng = '(' + latitude + ',' + longitude + ')';
+    let modifiedValues;
     if (time === hour) {
       latLngArr.push(latlng);
+      modifiedValues = latLngArr.join('~');
     } else {
-      latLngArr.length = 0;
+      latLngArr = [];
       time = hour;
       latLngArr.push(latlng);
+      modifiedValues = latLngArr.join('~');
     }
 
     var slatVal = latLngArr[0];
@@ -198,7 +202,6 @@ const Home = ({route, driverId}) => {
       {latitude: dlatitude, longitude: dlongutitue},
     );
 
-    // console.log(latlng, value);
     // set(
     //   ref(
     //     database,
@@ -214,8 +217,8 @@ const Home = ({route, driverId}) => {
     //       hour,
     //   ),
     //   {
-    //     distance_in_meter: dis,
-    //     latlng: latLngArr.toString(),
+    //     'distance-in-meter': dis,
+    //     'lat-lng': modifiedValues,
     //   },
     // );
   }
@@ -244,19 +247,29 @@ const Home = ({route, driverId}) => {
 
 const ActivityIndicatorElement = () => {
   return (
-    <ActivityIndicator
-      color="#009688"
-      size="large"
-      style={styles.activityIndicatorStyle}
-    />
+    <View style={{flex: 2}}>
+      <View style={styles.indicatorContainer}>
+        <ActivityIndicator color="#000" size={50} />
+        <Text
+          style={{
+            fontSize: 17,
+            fontWeight: '400',
+            color: '#000',
+            marginStart: 5,
+          }}>
+          Please wait....
+        </Text>
+      </View>
+    </View>
   );
 };
 
 export default Home;
 
 const styles = StyleSheet.create({
-  activityIndicatorStyle: {
-    flex: 1,
+  indicatorContainer: {
+    flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
   },
 });

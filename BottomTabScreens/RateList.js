@@ -1,11 +1,17 @@
-import {View, Text, BackHandler, StyleSheet, ActivityIndicator} from 'react-native';
+import {
+  View,
+  Text,
+  BackHandler,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
 import React, {useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackgroundService from 'react-native-background-actions';
 import {WebView} from 'react-native-webview';
 
-const LogOut = props => {
+const RateList = props => {
   const navigation = useNavigation();
   // useEffect(() => {
   //   BackgroundService.stop();
@@ -14,7 +20,7 @@ const LogOut = props => {
   //   BackHandler.exitApp();
   // }, []);
   return (
-    <View style={{flex: 1}}> 
+    <View style={{flex: 1}}>
       <WebView
         // ref={webviewRef}
         // source={{uri: 'https://webviewpages.web.app/firstscreen'}}
@@ -30,18 +36,28 @@ const LogOut = props => {
 const ActivityIndicatorElement = () => {
   //making a view to show to while loading the webpage
   return (
-    <ActivityIndicator
-      color="#009688"
-      size="large"
-      style={styles.activityIndicatorStyle}
-    />
+    <View style={{flex: 2}}>
+      <View style={styles.indicatorContainer}>
+        <ActivityIndicator color="#000" size={50} />
+        <Text
+          style={{
+            fontSize: 17,
+            fontWeight: '400',
+            color: '#000',
+            marginStart: 5,
+          }}>
+          Please wait....
+        </Text>
+      </View>
+    </View>
   );
 };
-export default LogOut;
+export default RateList;
 
 const styles = StyleSheet.create({
-  activityIndicatorStyle: {
-    flex: 1,
+  indicatorContainer: {
+    flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
   },
 });
