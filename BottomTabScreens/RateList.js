@@ -12,6 +12,7 @@ import BackgroundService from 'react-native-background-actions';
 import {WebView} from 'react-native-webview';
 
 const RateList = props => {
+  
   const navigation = useNavigation();
   // useEffect(() => {
   //   BackgroundService.stop();
@@ -36,7 +37,7 @@ const RateList = props => {
 const ActivityIndicatorElement = () => {
   //making a view to show to while loading the webpage
   return (
-    <View style={{flex: 2}}>
+    <View style={{flex: 15, justifyContent: 'center', alignItems: 'center'}}>
       <View style={styles.indicatorContainer}>
         <ActivityIndicator color="#000" size={50} />
         <Text

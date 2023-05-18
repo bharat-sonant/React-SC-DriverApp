@@ -30,52 +30,44 @@ const Login = ({navigation}) => {
   const [dataList, setDataList] = useState([]);
   // const [showPassError, setShowPassError] = useState(true);
 
-  // function backActionHandler() {
-  //   Alert.alert('', 'Are sure to exit the Application', [
-  //     {
-  //       text: 'No',
-  //       onPress: () => null,
-  //       style: 'cancel',
-  //     },
-  //     {
-  //       text: 'Yes',
-  //       onPress: () => BackHandler.exitApp(),
-  //     },
-  //   ]);
-  //   return true;
-  // }
-  // useBackHandler(backActionHandler);
+  function backActionHandler() {
+    BackHandler.exitApp();
+  }
+  useBackHandler(backActionHandler);
 
   const getAuthData = useCallback(() => {
     const datalist = [];
     setDataList([]);
-    get(child(databasePath, 'DriversData/Auth')).then(snapshot => {
-      if (snapshot.exists()) {
-        const val = snapshot.val();
-        const keyArray = Object.keys(snapshot.val()).filter(
-          key => key !== 'lastKey',
-        );
+    get(child(databasePath, 'DriversData/Auth'))
+      .then(snapshot => {
+        if (snapshot.exists()) {
+          const val = snapshot.val();
+          const keyArray = Object.keys(snapshot.val()).filter(
+            key => key !== 'lastKey',
+          );
 
-        for (let i = 0; i < keyArray.length; i++) {
-          let key = keyArray[i];
+          for (let i = 0; i < keyArray.length; i++) {
+            let key = keyArray[i];
+            let username = key;
+            let password = val[key]['code'];
+            let driverId = val[key]['driverId'];
 
-          let username = key;
-          let password = val[key]['code'];
-          let driverId = val[key]['driverId'];
-
-          datalist.push({
-            username: username,
-            password: password,
-            driverId: driverId,
-          });
+            datalist.push({
+              username: username,
+              password: password,
+              driverId: driverId,
+            });
+          }
+          setDataList(datalist);
+        } else {
+          setDataList([]);
+          datalist = [];
+          console.log('No data available');
         }
-        setDataList(datalist);
-      } else {
-        setDataList([]);
-        datalist = [];
-        console.log('No data available');
-      }
-    });
+      })
+      .catch(error => {
+        console.log(error);
+      });
   }, []);
 
   useEffect(() => {
@@ -87,21 +79,38 @@ const Login = ({navigation}) => {
       const user = dataList.find(user => user.username == userName);
       if (user) {
         if (user.password == pass) {
-          setShow(true);
-          setPassError(false);
+          setShow(false);
           const driverID = user.driverId.toString();
-          const username = user.username;
-          AsyncStorage.setItem('username', username);
-          AsyncStorage.setItem('driverId', driverID);
-          AsyncStorage.setItem('login', 'true');
-          navigation.navigate('BottomTabScreen');
+          get(child(databasePath, 'DriversData/Drivers/' + driverID))
+            .then(snapshot => {
+              if (snapshot.exists()) {
+                const vehicleId = snapshot.child('vehicleId').val();
+                if (vehicleId !== '') {
+                  setShow(true);
+                  setPassError(false);
+                  // const driverID = user.driverId.toString();
+                  const username = user.username;
+                  AsyncStorage.setItem('username', username);
+                  AsyncStorage.setItem('driverId', driverID);
+                  AsyncStorage.setItem('login', 'true');
+                  navigation.navigate('BottomTabScreen');
+                } else {
+                  setShow(true);
+                  Alert.alert(
+                    '',
+                    'Aapko koi vehicle assigned nahi hai, kripya supervisor se mile',
+                  );
+                }
+              }
+            })
+            .catch(error => {
+              console.log(error);
+            });
         } else {
-          setShow(true);
           setPassError(true);
           setPassError('password incorrect');
         }
       } else {
-        setShow(true);
         Alert.alert('', 'Login Failed!! Not a valid user');
       }
     }
@@ -124,94 +133,102 @@ const Login = ({navigation}) => {
     return true;
   }
 
-  // const ActivityIndicatorElement = () => {
-  //   //making a view to show to while loading the webpage
-  //   return (
-  //     <ActivityIndicator
-  //       color="#009688"
-  //       size="large"
-  //       style={styles.activityIndicatorStyle}
-  //     />
-  //   );
-  // };
+  const ActivityIndicatorElement = () => {
+    //making a view to show to while loading the webpage
+    return (
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <View style={styles.indicatorContainer}>
+          <ActivityIndicator color="#000" size={50} />
+          <Text
+            style={{
+              fontSize: 17,
+              fontWeight: '400',
+              color: '#000',
+              marginStart: 5,
+            }}>
+            Please wait....
+          </Text>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      {/* {show ? ( */}
-      <ScrollView
-        style={{
-          height: Dimensions.get('screen').height,
-          width: Dimensions.get('screen').width,
-        }}>
-        <Image
-          style={styles.loginImage}
-          source={require('../Images/login-Image.png')}
-        />
-        <View style={styles.inputStyle}>
+      {show ? (
+        <ScrollView
+          style={{
+            height: Dimensions.get('screen').height,
+            width: Dimensions.get('screen').width,
+          }}>
           <Image
-            style={styles.icon}
-            source={{
-              uri: 'https://static.vecteezy.com/system/resources/thumbnails/007/033/146/small/profile-icon-login-head-icon-vector.jpg',
-            }}
+            style={styles.loginImage}
+            source={require('../Images/login-Image.png')}
           />
-          <TextInput
-            style={{color: 'black', fontSize: 15, marginBottom: -10}}
-            maxLength={10}
-            ref={usernameRef}
-            autoFocus={false}
-            placeholder="username"
-            value={userName}
-            onChangeText={setUserName}
-          />
-        </View>
-        <View style={{position: 'relative', left: 30}}>
-          <Text style={{color: 'red', fontSize: 13}}>
-            {!userName.trim() ? usernameError : ''}
-          </Text>
-        </View>
-        <View style={styles.inputStyle}>
-          <Image
-            style={styles.imageStyl}
-            source={{
-              uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8500uKjsVedMStg1isnwiq9CArOWUVwLLzwanyk5gp0DWPxIWmAtTfYMafLzWMq9xeak&usqp=CAU',
-            }}
-          />
-          <TextInput
-            placeholder="Password"
-            style={{color: 'black', fontSize: 15, marginBottom: -10}}
-            value={pass}
-            ref={passRef}
-            maxLength={4}
-            autoCapitalize="none"
-            onChangeText={setPass}
-            secureTextEntry={true}
-          />
-        </View>
-        <View style={{position: 'relative', left: 30}}>
-          <Text style={{color: 'red', fontSize: 13}}>
-            {!pass.trim() || pass.length < 4 || passError ? passError : ''}
-          </Text>
-        </View>
-        <View style={{justifyContent: 'center', alignItems: 'center'}}>
-          <TouchableOpacity
-            style={styles.buttonStyle}
-            onPress={() => getLoginData()}>
-            <Text
-              style={{
-                color: '#fff',
-                fontSize: 16,
-                fontWeight: '700',
-                marginTop: -5,
-              }}>
-              Login
+          <View style={styles.inputStyle}>
+            <Image
+              style={styles.icon}
+              source={{
+                uri: 'https://static.vecteezy.com/system/resources/thumbnails/007/033/146/small/profile-icon-login-head-icon-vector.jpg',
+              }}
+            />
+            <TextInput
+              style={{color: 'black', fontSize: 15, marginBottom: -10}}
+              maxLength={10}
+              ref={usernameRef}
+              autoFocus={false}
+              placeholder="username"
+              value={userName}
+              onChangeText={setUserName}
+            />
+          </View>
+          <View style={{position: 'relative', left: 30}}>
+            <Text style={{color: 'red', fontSize: 13}}>
+              {!userName.trim() ? usernameError : ''}
             </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-      {/* )  */}
-      {/* : (
+          </View>
+          <View style={styles.inputStyle}>
+            <Image
+              style={styles.imageStyl}
+              source={{
+                uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8500uKjsVedMStg1isnwiq9CArOWUVwLLzwanyk5gp0DWPxIWmAtTfYMafLzWMq9xeak&usqp=CAU',
+              }}
+            />
+            <TextInput
+              placeholder="Password"
+              style={{color: 'black', fontSize: 15, marginBottom: -10}}
+              value={pass}
+              ref={passRef}
+              maxLength={4}
+              autoCapitalize="none"
+              onChangeText={setPass}
+              secureTextEntry={true}
+            />
+          </View>
+          <View style={{position: 'relative', left: 30}}>
+            <Text style={{color: 'red', fontSize: 13}}>
+              {!pass.trim() || pass.length < 4 || passError ? passError : ''}
+            </Text>
+          </View>
+          <View style={{justifyContent: 'center', alignItems: 'center'}}>
+            <TouchableOpacity
+              style={styles.buttonStyle}
+              onPress={() => getLoginData()}>
+              <Text
+                style={{
+                  color: '#fff',
+                  fontSize: 16,
+                  fontWeight: '700',
+                  marginTop: -5,
+                }}>
+                Login
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      ) : (
         <ActivityIndicatorElement />
-      )} */}
+      )}
     </View>
   );
 };
@@ -280,8 +297,9 @@ const styles = StyleSheet.create({
     height: 350,
     width: Dimensions.get('screen').width,
   },
-  activityIndicatorStyle: {
-    flex: 1,
+  indicatorContainer: {
+    flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
   },
 });

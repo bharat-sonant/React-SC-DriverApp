@@ -10,6 +10,7 @@ import {WebView} from 'react-native-webview';
 import Geolocation from '@react-native-community/geolocation';
 
 const MapScreen = () => {
+  
   const webviewRef = useRef();
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
@@ -67,7 +68,7 @@ const MapScreen = () => {
 
 const ActivityIndicatorElement = () => {
   return (
-    <View style={{flex: 2}}>
+    <View style={{flex: 15, justifyContent: 'center', alignItems: 'center'}}>
       <View style={styles.indicatorContainer}>
         <ActivityIndicator color="#000" size={50} />
         <Text

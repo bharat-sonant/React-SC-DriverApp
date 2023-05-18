@@ -1,27 +1,38 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React, { useEffect } from 'react'
-import { NavigationAction, useNavigation } from '@react-navigation/native';
+import {Dimensions, Image, StyleSheet, Text, View} from 'react-native';
+import React, {useEffect} from 'react';
+import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Splash = () => {
-    const navigation = useNavigation()
-    useEffect(() => {
-        checkAlreadyLogin();
-    }, []);
-    const checkAlreadyLogin = async () => {
-        const getUserNumber = await AsyncStorage.getItem("userNumber")
-        if (getUserNumber === null) {
-            navigation.navigate("Login")
-        } else {
-            navigation.navigate("BottomTabScreen");
-        }
-    }
-    return (
-        <View>
-        </View>
-    )
-}
+  const navigation = useNavigation();
+  useEffect(() => {
+    setTimeout(() => {
+      getData();
+    }, 3000);
+  }, []);
 
-export default Splash
+  const getData = async () => {
+    try {
+      const isLogin = await AsyncStorage.getItem('login');
+      if (isLogin !== null) {
+        navigation.navigate('BottomTabScreen');
+      } else {
+        navigation.navigate('Login');
+      }
+    } catch (e) {}
+  };
 
-const styles = StyleSheet.create({})
+  return (
+    <View style={{flex: 1, justifyContent: 'center', backgroundColor: '#000'}}>
+      <Image
+        style={{
+          width: 400,
+          height: 400,
+        }}
+        source={require('../Images/driver.png')}
+      />
+    </View>
+  );
+};
+
+export default Splash;

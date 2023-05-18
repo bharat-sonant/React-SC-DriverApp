@@ -10,8 +10,9 @@ import {
   AppState,
   ToastAndroid,
   Dimensions,
+  BackHandler,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {WebView} from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useBackHandler} from '@react-native-community/hooks';
@@ -43,16 +44,52 @@ const Home = ({route, driverId}) => {
   const [driverID, setDriverId] = useState('');
   const [count, setCount] = useState(0);
   const NO_LOCATION_PROVIDER_AVAILABLE = 2;
+  const [getDataFromReact, setDataFromReact] = useState('');
 
   async function startBackgroundService() {
+    AsyncStorage.setItem('Service', 'start');
     await BackgroundService.start(veryIntensiveTask, options);
   }
 
+  const getBacgroundServiceData = useCallback(async () => {
+    const value = await AsyncStorage.getItem('Service');
+    if (value === null) {
+      startBackgroundService();
+    } else {
+      console.log('already started');
+    }
+  }, []);
+
+  useEffect(() => {
+    getData();
+
+    const backAction = () => {
+      Alert.alert('Hold on!', 'Are you sure you want to go back?', [
+        {
+          text: 'Cancel',
+          onPress: () => null,
+          style: 'cancel',
+        },
+        {text: 'YES', onPress: () => BackHandler.exitApp()},
+      ]);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
+
+    return () => backHandler.remove();
+  }, [getBacgroundServiceData]);
+
   const getData = async () => {
+    console.log('enter');
     try {
       const value = await AsyncStorage.getItem('driverId');
       const driverUsername = await AsyncStorage.getItem('username');
       if (value !== null && driverUsername !== null) {
+        console.log('Driver Id: ' + value);
         setDriverId(value);
         requestForPermission(value);
         sendDatatoWeb(value, driverUsername);
@@ -74,12 +111,8 @@ const Home = ({route, driverId}) => {
 
     setTimeout(() => {
       clearInterval(timeInterval);
-    }, 5000);
+    }, 7000);
   }
-
-  useEffect(() => {
-    getData();
-  }, []);
 
   const requestForPermission = async value => {
     const allLocation = await PermissionsAndroid.requestMultiple([
@@ -93,7 +126,10 @@ const Home = ({route, driverId}) => {
         result['android.permission.ACCESS_BACKGROUND_LOCATION'] === 'granted'
       ) {
         console.log('granted');
-        fetchLocation(value);
+        console.log(BackgroundService.isRunning());
+        getBacgroundServiceData();
+        // startBackgroundService();
+        // fetchLocation(value);
       } else if (
         result['android.permission.ACCESS_COARSE_LOCATION'] &&
         result['android.permission.ACCESS_FINE_LOCATION'] &&
@@ -141,12 +177,13 @@ const Home = ({route, driverId}) => {
     const {delay} = taskDataArguments;
     await new Promise(async resolve => {
       for (let i = 0; BackgroundService.isRunning(); i++) {
-        console.log(i);
         Geolocation.getCurrentPosition(
-          position => {
+          async position => {
             let latitude = parseFloat(position.coords.latitude);
             let longitude = parseFloat(position.coords.longitude);
-            sendDataToDatabase(latitude, longitude);
+            let value = await AsyncStorage.getItem('driverId');
+
+            sendDataToDatabase(latitude, longitude, value);
           },
           error => {
             console.log(error.code, error.message);
@@ -164,12 +201,14 @@ const Home = ({route, driverId}) => {
       name: 'ic_launcher',
       type: 'mipmap',
     },
+    linkingURI: 'yourSchemeHere://chat/jane',
     parameters: {
       delay: 2000,
     },
   };
 
   function sendDataToDatabase(latitude, longitude, value) {
+    console.log('Driver: ' + value);
     let date = moment(new Date()).format('yyyy-MM-DD');
     let month = moment().format('MMMM');
     let year = moment().format('YYYY');
@@ -202,29 +241,29 @@ const Home = ({route, driverId}) => {
       {latitude: dlatitude, longitude: dlongutitue},
     );
 
-    // set(
-    //   ref(
-    //     database,
-    //     'TravelPath/' +
-    //       value +
-    //       '/' +
-    //       year +
-    //       '/' +
-    //       month +
-    //       '/' +
-    //       date +
-    //       '/' +
-    //       hour,
-    //   ),
-    //   {
-    //     'distance-in-meter': dis,
-    //     'lat-lng': modifiedValues,
-    //   },
-    // );
+    set(
+      ref(
+        database,
+        'TravelPath/' +
+          value +
+          '/' +
+          year +
+          '/' +
+          month +
+          '/' +
+          date +
+          '/' +
+          hour,
+      ),
+      {
+        'distance-in-meter': dis,
+        'lat-lng': modifiedValues,
+      },
+    );
   }
 
   function getInjectableJSMessage(message) {
-    console.log(message);
+    // console.log(message);
     return `
       (function() {
         document.dispatchEvent(new MessageEvent('message', {
@@ -234,6 +273,11 @@ const Home = ({route, driverId}) => {
     `;
   }
 
+  function onMessage(data) {
+    // console.log(data.nativeEvent.data);
+    setDataFromReact(data.nativeEvent.data);
+  }
+
   return (
     <WebView
       ref={webviewRef}
@@ -241,13 +285,14 @@ const Home = ({route, driverId}) => {
       source={{uri: 'http://192.168.31.248:3000/mobilescreen-calculation'}}
       renderLoading={ActivityIndicatorElement}
       startInLoadingState={true}
+      onMessage={onMessage}
     />
   );
 };
 
 const ActivityIndicatorElement = () => {
   return (
-    <View style={{flex: 2}}>
+    <View style={{flex: 15, justifyContent: 'center', alignItems: 'center'}}>
       <View style={styles.indicatorContainer}>
         <ActivityIndicator color="#000" size={50} />
         <Text
