@@ -61,6 +61,7 @@ const MapScreen = () => {
       // source={{uri: 'https://webviewpages.web.app/firstscreen'}}
       source={{uri: 'http://192.168.31.248:3000/mobilescreen-mapscreen'}}
       renderLoading={ActivityIndicatorElement}
+      setBuiltInZoomControls={false}
       startInLoadingState={true}
     />
   );

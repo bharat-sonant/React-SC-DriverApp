@@ -186,7 +186,15 @@ const Home = ({route, driverId}) => {
             sendDataToDatabase(latitude, longitude, value);
           },
           error => {
-            console.log(error.code, error.message);
+            if (error.code === NO_LOCATION_PROVIDER_AVAILABLE) {
+              try {
+                console.log(error.code);
+                RNAndroidSettingsTool.ACTION_LOCATION_SOURCE_SETTINGS();
+              } catch (error) {
+                console.log('Settings: ', error);
+              }
+            }
+            console.log(error.message);
           },
         );
         await sleep(delay);
@@ -241,25 +249,25 @@ const Home = ({route, driverId}) => {
       {latitude: dlatitude, longitude: dlongutitue},
     );
 
-    set(
-      ref(
-        database,
-        'TravelPath/' +
-          value +
-          '/' +
-          year +
-          '/' +
-          month +
-          '/' +
-          date +
-          '/' +
-          hour,
-      ),
-      {
-        'distance-in-meter': dis,
-        'lat-lng': modifiedValues,
-      },
-    );
+    // set(
+    //   ref(
+    //     database,
+    //     'TravelPath/' +
+    //       value +
+    //       '/' +
+    //       year +
+    //       '/' +
+    //       month +
+    //       '/' +
+    //       date +
+    //       '/' +
+    //       hour,
+    //   ),
+    //   {
+    //     'distance-in-meter': dis,
+    //     'lat-lng': modifiedValues,
+    //   },
+    // );
   }
 
   function getInjectableJSMessage(message) {
@@ -285,7 +293,9 @@ const Home = ({route, driverId}) => {
       source={{uri: 'http://192.168.31.248:3000/mobilescreen-calculation'}}
       renderLoading={ActivityIndicatorElement}
       startInLoadingState={true}
-      onMessage={onMessage}
+      setBuiltInZoomControls={false}
+      // onMessage={onMessage}
+      // scalesPageToFit={true}
     />
   );
 };

@@ -12,7 +12,6 @@ import BackgroundService from 'react-native-background-actions';
 import {WebView} from 'react-native-webview';
 
 const RateList = props => {
-  
   const navigation = useNavigation();
   // useEffect(() => {
   //   BackgroundService.stop();
@@ -27,6 +26,7 @@ const RateList = props => {
         // source={{uri: 'https://webviewpages.web.app/firstscreen'}}
         source={{uri: 'http://192.168.31.248:3000/mobilescreen-rate-list'}}
         renderLoading={ActivityIndicatorElement}
+        setBuiltInZoomControls={false}
         startInLoadingState={true}
       />
       {/* <Text style={{color: 'black'}}>Log out</Text> */}

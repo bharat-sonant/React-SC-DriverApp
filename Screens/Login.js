@@ -85,7 +85,7 @@ const Login = ({navigation}) => {
             .then(snapshot => {
               if (snapshot.exists()) {
                 const vehicleId = snapshot.child('vehicleId').val();
-                if (vehicleId !== '') {
+                if (vehicleId !== null && vehicleId !== '') {
                   setShow(true);
                   setPassError(false);
                   // const driverID = user.driverId.toString();
