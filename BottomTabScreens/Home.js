@@ -31,15 +31,6 @@ const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time));
 let latLngArr = [];
 let time = moment().format('hh:mm');
 const Home = () => {
-  const appState = useRef(AppState.currentState);
-  const [appStateVisible, setAppStateVisible] = useState(appState.current);
-
-  const TASK_FETCH_LOCATION = 'TASK_FETCH_LOCATION';
-  const LOCATION_TRACKING = 'location-tracking';
-  const [loginUserNumber, setLoginUserNumber] = useState('');
-  const [webViewLoaded, setWebViewLoaded] = useState(false);
-  const [latitude, setLatitude] = useState('');
-  const [longitude, setLongitude] = useState('');
   const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const webviewRef = useRef();
@@ -79,7 +70,6 @@ const Home = () => {
     requestForPermission();
   }, []);
 
- 
   const getData = async () => {
     try {
       const value = await AsyncStorage.getItem('driverId');
@@ -290,25 +280,25 @@ const Home = () => {
       {latitude: dlatitude, longitude: dlongutitue},
     );
 
-    // set(
-    //   ref(
-    //     database,
-    //     'TravelPath/' +
-    //       value +
-    //       '/' +
-    //       year +
-    //       '/' +
-    //       month +
-    //       '/' +
-    //       date +
-    //       '/' +
-    //       hour,
-    //   ),
-    //   {
-    //     'distance-in-meter': dis,
-    //     'lat-lng': modifiedValues,
-    //   },
-    // );
+    set(
+      ref(
+        database,
+        'TravelPath/' +
+          value +
+          '/' +
+          year +
+          '/' +
+          month +
+          '/' +
+          date +
+          '/' +
+          hour,
+      ),
+      {
+        'distance-in-meter': dis,
+        'lat-lng': modifiedValues,
+      },
+    );
   }
 
   function getInjectableJSMessage(message) {
