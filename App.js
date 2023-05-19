@@ -14,7 +14,7 @@ const Tab = createBottomTabNavigator();
 const App = () => {
   const BottomTabScreen = () => {
     return (
-      <Tab.Navigator screenOptions={{headerShown: false}}>
+      <Tab.Navigator screenOptions={{headerShown: true}}>
         <Tab.Screen name="Home" component={Home} />
         <Tab.Screen name="Ratelist" component={Logout} />
         <Tab.Screen name="Travel" component={MapScreen} />
@@ -38,7 +38,7 @@ const App = () => {
         <Stack.Screen
           name="BottomTabScreen"
           component={BottomTabScreen}
-          options={{headerShown: false}}
+          options={{headerShown: false, headerBackVisible: false}}
         />
       </Stack.Navigator>
     </NavigationContainer>

@@ -28,7 +28,6 @@ const Login = ({navigation}) => {
   const [show, setShow] = useState(true);
   const databasePath = ref(database);
   const [dataList, setDataList] = useState([]);
-  // const [showPassError, setShowPassError] = useState(true);
 
   function backActionHandler() {
     BackHandler.exitApp();
@@ -97,8 +96,8 @@ const Login = ({navigation}) => {
                 } else {
                   setShow(true);
                   Alert.alert(
-                    '',
-                    'Aapko koi vehicle assigned nahi hai, kripya supervisor se mile',
+                    'सावधान !!',
+                    'आपको कोई व्हीकल असाइन नहीं है, कृप्या सुपरवाइजर से मिले',
                   );
                 }
               }
@@ -111,7 +110,7 @@ const Login = ({navigation}) => {
           setPassError('password incorrect');
         }
       } else {
-        Alert.alert('', 'Login Failed!! Not a valid user');
+        Alert.alert('', 'Login Failed!!!');
       }
     }
   };
@@ -155,61 +154,62 @@ const Login = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      {show ? (
-        <ScrollView
-          style={{
-            height: Dimensions.get('screen').height,
-            width: Dimensions.get('screen').width,
-          }}>
+      {/* {show ? ( */}
+      <ScrollView
+        style={{
+          height: Dimensions.get('screen').height,
+          width: Dimensions.get('screen').width,
+        }}>
+        <Image
+          style={styles.loginImage}
+          source={require('../Images/login-Image.png')}
+        />
+        <View style={styles.inputStyle}>
           <Image
-            style={styles.loginImage}
-            source={require('../Images/login-Image.png')}
+            style={styles.icon}
+            source={{
+              uri: 'https://static.vecteezy.com/system/resources/thumbnails/007/033/146/small/profile-icon-login-head-icon-vector.jpg',
+            }}
           />
-          <View style={styles.inputStyle}>
-            <Image
-              style={styles.icon}
-              source={{
-                uri: 'https://static.vecteezy.com/system/resources/thumbnails/007/033/146/small/profile-icon-login-head-icon-vector.jpg',
-              }}
-            />
-            <TextInput
-              style={{color: 'black', fontSize: 15, marginBottom: -10}}
-              maxLength={10}
-              ref={usernameRef}
-              autoFocus={false}
-              placeholder="username"
-              value={userName}
-              onChangeText={setUserName}
-            />
-          </View>
-          <View style={{position: 'relative', left: 30}}>
-            <Text style={{color: 'red', fontSize: 13}}>
-              {!userName.trim() ? usernameError : ''}
-            </Text>
-          </View>
-          <View style={styles.inputStyle}>
-            <Image
-              style={styles.imageStyl}
-              source={{
-                uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8500uKjsVedMStg1isnwiq9CArOWUVwLLzwanyk5gp0DWPxIWmAtTfYMafLzWMq9xeak&usqp=CAU',
-              }}
-            />
-            <TextInput
-              placeholder="Password"
-              style={{color: 'black', fontSize: 15, marginBottom: -10}}
-              value={pass}
-              ref={passRef}
-              maxLength={4}
-              autoCapitalize="none"
-              onChangeText={setPass}
-              secureTextEntry={true}
-            />
-          </View>
-          <View style={{position: 'relative', left: 30}}>
-            <Text style={{color: 'red', fontSize: 13}}>
-              {!pass.trim() || pass.length < 4 || passError ? passError : ''}
-            </Text>
-          </View>
+          <TextInput
+            style={{color: 'black', fontSize: 15, marginBottom: -10}}
+            maxLength={10}
+            ref={usernameRef}
+            autoFocus={false}
+            placeholder="username"
+            value={userName}
+            onChangeText={setUserName}
+          />
+        </View>
+        <View style={{position: 'relative', left: 30}}>
+          <Text style={{color: 'red', fontSize: 13}}>
+            {!userName.trim() ? usernameError : ''}
+          </Text>
+        </View>
+        <View style={styles.inputStyle}>
+          <Image
+            style={styles.imageStyl}
+            source={{
+              uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8500uKjsVedMStg1isnwiq9CArOWUVwLLzwanyk5gp0DWPxIWmAtTfYMafLzWMq9xeak&usqp=CAU',
+            }}
+          />
+          <TextInput
+            placeholder="Password"
+            style={{color: 'black', fontSize: 15, marginBottom: -10}}
+            value={pass}
+            ref={passRef}
+            maxLength={4}
+            autoCapitalize="none"
+            onChangeText={setPass}
+            secureTextEntry={true}
+          />
+        </View>
+        <View style={{position: 'relative', left: 30}}>
+          <Text style={{color: 'red', fontSize: 13}}>
+            {!pass.trim() || pass.length < 4 || passError ? passError : ''}
+          </Text>
+        </View>
+        {show ? (
           <View style={{justifyContent: 'center', alignItems: 'center'}}>
             <TouchableOpacity
               style={styles.buttonStyle}
@@ -225,10 +225,13 @@ const Login = ({navigation}) => {
               </Text>
             </TouchableOpacity>
           </View>
-        </ScrollView>
-      ) : (
-        <ActivityIndicatorElement />
-      )}
+        ) : (
+          <ActivityIndicatorElement />
+        )}
+      </ScrollView>
+      {/* ) : ( */}
+      {/* <ActivityIndicatorElement /> */}
+      {/* )} */}
     </View>
   );
 };
@@ -301,5 +304,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 20,
   },
 });

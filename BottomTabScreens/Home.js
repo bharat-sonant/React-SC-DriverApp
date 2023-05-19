@@ -11,6 +11,7 @@ import {
   ToastAndroid,
   Dimensions,
   BackHandler,
+  Platform,
 } from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {WebView} from 'react-native-webview';
@@ -18,17 +19,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useBackHandler} from '@react-native-community/hooks';
 import Geolocation from '@react-native-community/geolocation';
 import BackgroundService from 'react-native-background-actions';
-import {get, ref, set, update} from 'firebase/database';
+import {get, ref, remove, set, update} from 'firebase/database';
 import {database} from '../Firebase';
 import RNAndroidSettingsTool from 'react-native-android-settings-tool';
 import moment from 'moment';
 import {getDistance} from 'geolib';
+import RNExitApp from 'react-native-exit-app';
 
 const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time));
 
 let latLngArr = [];
 let time = moment().format('hh:mm');
-const Home = ({route, driverId}) => {
+const Home = () => {
   const appState = useRef(AppState.currentState);
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
 
@@ -46,6 +48,18 @@ const Home = ({route, driverId}) => {
   const NO_LOCATION_PROVIDER_AVAILABLE = 2;
   const [getDataFromReact, setDataFromReact] = useState('');
 
+  // function backActionHandler() {
+  //   Alert.alert('Hold on!', 'Are you sure you want to go back?', [
+  //     {
+  //       text: 'Cancel',
+  //       style: 'cancel',
+  //     },
+  //     {text: 'YES', onPress: () => RNExitApp.exitApp()},
+  //   ]);
+  //   return true;
+  // }
+  // useBackHandler(backActionHandler);
+
   async function startBackgroundService() {
     AsyncStorage.setItem('Service', 'start');
     await BackgroundService.start(veryIntensiveTask, options);
@@ -62,34 +76,15 @@ const Home = ({route, driverId}) => {
 
   useEffect(() => {
     getData();
+    requestForPermission();
+  }, []);
 
-    const backAction = () => {
-      Alert.alert('Hold on!', 'Are you sure you want to go back?', [
-        {
-          text: 'Cancel',
-          onPress: () => null,
-          style: 'cancel',
-        },
-        {text: 'YES', onPress: () => BackHandler.exitApp()},
-      ]);
-      return true;
-    };
-
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction,
-    );
-
-    return () => backHandler.remove();
-  }, [getBacgroundServiceData]);
-
+ 
   const getData = async () => {
-    console.log('enter');
     try {
       const value = await AsyncStorage.getItem('driverId');
       const driverUsername = await AsyncStorage.getItem('username');
       if (value !== null && driverUsername !== null) {
-        console.log('Driver Id: ' + value);
         setDriverId(value);
         requestForPermission(value);
         sendDatatoWeb(value, driverUsername);
@@ -115,63 +110,100 @@ const Home = ({route, driverId}) => {
   }
 
   const requestForPermission = async value => {
-    const allLocation = await PermissionsAndroid.requestMultiple([
-      PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
-    ]).then(result => {
-      if (
-        result['android.permission.ACCESS_COARSE_LOCATION'] &&
-        result['android.permission.ACCESS_FINE_LOCATION'] &&
-        result['android.permission.ACCESS_BACKGROUND_LOCATION'] === 'granted'
-      ) {
-        console.log('granted');
-        console.log(BackgroundService.isRunning());
-        getBacgroundServiceData();
-        // startBackgroundService();
-        // fetchLocation(value);
-      } else if (
-        result['android.permission.ACCESS_COARSE_LOCATION'] &&
-        result['android.permission.ACCESS_FINE_LOCATION'] &&
-        result['android.permission.ACCESS_BACKGROUND_LOCATION'] ===
-          'never_ask_again'
-      ) {
-        console.log('never_ask_again');
-      } else if (
-        result['android.permission.ACCESS_COARSE_LOCATION'] &&
-        result['android.permission.ACCESS_FINE_LOCATION'] &&
-        result['android.permission.ACCESS_BACKGROUND_LOCATION'] === 'denied'
-      ) {
-        console.log('denied');
+    try {
+      if (Platform.OS === 'android' && Platform.Version >= 30) {
+        await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+        ])
+          .then(result => {
+            console.log('RESULT: ', result);
+            if (
+              result['android.permission.ACCESS_COARSE_LOCATION'] &&
+              result['android.permission.ACCESS_FINE_LOCATION'] &&
+              result['android.permission.ACCESS_BACKGROUND_LOCATION'] ===
+                'granted'
+            ) {
+              console.log('granted');
+              getBacgroundServiceData();
+              // startBackgroundService();
+              // fetchLocation(value);
+            } else if (
+              result['android.permission.ACCESS_COARSE_LOCATION'] &&
+              result['android.permission.ACCESS_FINE_LOCATION'] &&
+              result['android.permission.ACCESS_BACKGROUND_LOCATION'] ===
+                'never_ask_again'
+            ) {
+              console.log('never_ask_again');
+              showLocationPermissionBlockedDialog();
+            } else if (
+              result['android.permission.ACCESS_COARSE_LOCATION'] &&
+              result['android.permission.ACCESS_FINE_LOCATION'] &&
+              result['android.permission.ACCESS_BACKGROUND_LOCATION'] ===
+                'denied'
+            ) {
+              console.log('Permission: denied');
+              showLocationPermissionBlockedDialog();
+            }
+          })
+          .catch(error => {
+            console.log('ERROR: ', error);
+          });
       }
-    });
+    } catch (error) {
+      console.error('Error requesting location permissions:', error);
+    }
   };
 
-  const fetchLocation = value => {
-    const timeInterId = setInterval(() => {
-      Geolocation.getCurrentPosition(
-        position => {
-          clearInterval(timeInterId);
-          setInterval(() => {
-            let latitude = parseFloat(position.coords.latitude);
-            let longitude = parseFloat(position.coords.longitude);
-            sendDataToDatabase(latitude, longitude, value);
-          }, 2000);
+  const showLocationPermissionBlockedDialog = () => {
+    Alert.alert(
+      'Location Permission Required',
+      'Please grant location permission (Allow All the time) in your device settings permission to use this app.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: () => RNExitApp.exitApp(),
         },
-        error => {
-          if (error.code === NO_LOCATION_PROVIDER_AVAILABLE) {
-            try {
-              console.log(error.code);
-              RNAndroidSettingsTool.ACTION_LOCATION_SOURCE_SETTINGS();
-            } catch (error) {
-              console.log('Settings: ', error);
-            }
-          }
-          console.log(error);
+        {
+          text: 'Open Settings',
+          onPress: openAppSettings,
         },
-      );
-    }, 1000);
+      ],
+    );
   };
+
+  const openAppSettings = () => {
+    Linking.openSettings();
+    RNExitApp.exitApp();
+  };
+
+  // const fetchLocation = value => {
+  //   const timeInterId = setInterval(() => {
+  //     Geolocation.getCurrentPosition(
+  //       position => {
+  //         clearInterval(timeInterId);
+  //         setInterval(() => {
+  //           let latitude = parseFloat(position.coords.latitude);
+  //           let longitude = parseFloat(position.coords.longitude);
+  //           sendDataToDatabase(latitude, longitude, value);
+  //         }, 2000);
+  //       },
+  //       error => {
+  //         if (error.code === NO_LOCATION_PROVIDER_AVAILABLE) {
+  //           try {
+  //             console.log(error.code);
+  //             RNAndroidSettingsTool.ACTION_LOCATION_SOURCE_SETTINGS();
+  //           } catch (error) {
+  //             console.log('Settings: ', error);
+  //           }
+  //         }
+  //         console.log(error);
+  //       },
+  //     );
+  //   }, 1000);
+  // };
 
   const veryIntensiveTask = async taskDataArguments => {
     const {delay} = taskDataArguments;
@@ -182,6 +214,15 @@ const Home = ({route, driverId}) => {
             let latitude = parseFloat(position.coords.latitude);
             let longitude = parseFloat(position.coords.longitude);
             let value = await AsyncStorage.getItem('driverId');
+
+            console.log(
+              'Latitude: ',
+              latitude,
+              ' Longitude: ',
+              longitude,
+              ' DriverId: ',
+              value,
+            );
 
             sendDataToDatabase(latitude, longitude, value);
           },
