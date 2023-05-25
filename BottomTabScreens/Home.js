@@ -12,6 +12,8 @@ import {
   Dimensions,
   BackHandler,
   Platform,
+  AccessibilityInfo,
+  AccessibilityService,
 } from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {WebView} from 'react-native-webview';
@@ -25,6 +27,11 @@ import RNAndroidSettingsTool from 'react-native-android-settings-tool';
 import moment from 'moment';
 import {getDistance} from 'geolib';
 import RNExitApp from 'react-native-exit-app';
+import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import VIForegroundService from '@voximplant/react-native-foreground-service';
+import PipHandler, {usePipModeListener} from 'react-native-pip-android';
+
+// import { requestBatteryPermission, registerBackgroundTask } from './BatteryPermission';
 
 const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time));
 
@@ -38,18 +45,19 @@ const Home = () => {
   const [count, setCount] = useState(0);
   const NO_LOCATION_PROVIDER_AVAILABLE = 2;
   const [getDataFromReact, setDataFromReact] = useState('');
+  const inPipMode = usePipModeListener();
 
-  // function backActionHandler() {
-  //   Alert.alert('Hold on!', 'Are you sure you want to go back?', [
-  //     {
-  //       text: 'Cancel',
-  //       style: 'cancel',
-  //     },
-  //     {text: 'YES', onPress: () => RNExitApp.exitApp()},
-  //   ]);
-  //   return true;
-  // }
-  // useBackHandler(backActionHandler);
+  function backActionHandler() {
+    Alert.alert('Hold on!', 'Are you sure you want to go back?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {text: 'YES', onPress: () => PipHandler.enterPipMode(300, 400)},
+    ]);
+    return true;
+  }
+  useBackHandler(backActionHandler);
 
   async function startBackgroundService() {
     AsyncStorage.setItem('Service', 'start');
@@ -67,7 +75,7 @@ const Home = () => {
 
   useEffect(() => {
     getData();
-    requestForPermission();
+    // alertBoxDialog();
   }, []);
 
   const getData = async () => {
@@ -101,46 +109,43 @@ const Home = () => {
 
   const requestForPermission = async value => {
     try {
-      if (Platform.OS === 'android' && Platform.Version >= 30) {
-        await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
-        ])
-          .then(result => {
-            console.log('RESULT: ', result);
-            if (
-              result['android.permission.ACCESS_COARSE_LOCATION'] &&
-              result['android.permission.ACCESS_FINE_LOCATION'] &&
-              result['android.permission.ACCESS_BACKGROUND_LOCATION'] ===
-                'granted'
-            ) {
-              console.log('granted');
-              getBacgroundServiceData();
-              // startBackgroundService();
-              // fetchLocation(value);
-            } else if (
-              result['android.permission.ACCESS_COARSE_LOCATION'] &&
-              result['android.permission.ACCESS_FINE_LOCATION'] &&
-              result['android.permission.ACCESS_BACKGROUND_LOCATION'] ===
-                'never_ask_again'
-            ) {
-              console.log('never_ask_again');
-              showLocationPermissionBlockedDialog();
-            } else if (
-              result['android.permission.ACCESS_COARSE_LOCATION'] &&
-              result['android.permission.ACCESS_FINE_LOCATION'] &&
-              result['android.permission.ACCESS_BACKGROUND_LOCATION'] ===
-                'denied'
-            ) {
-              console.log('Permission: denied');
-              showLocationPermissionBlockedDialog();
-            }
-          })
-          .catch(error => {
-            console.log('ERROR: ', error);
-          });
-      }
+      await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+      ])
+        .then(result => {
+          console.log('RESULT: ', result);
+          if (
+            result['android.permission.ACCESS_COARSE_LOCATION'] &&
+            result['android.permission.ACCESS_FINE_LOCATION'] &&
+            result['android.permission.ACCESS_BACKGROUND_LOCATION'] ===
+              'granted'
+          ) {
+            console.log('granted');
+            getBacgroundServiceData();
+            // startBackgroundService();
+            // fetchLocation(value);
+          } else if (
+            result['android.permission.ACCESS_COARSE_LOCATION'] &&
+            result['android.permission.ACCESS_FINE_LOCATION'] &&
+            result['android.permission.ACCESS_BACKGROUND_LOCATION'] ===
+              'never_ask_again'
+          ) {
+            console.log('never_ask_again');
+            showLocationPermissionBlockedDialog();
+          } else if (
+            result['android.permission.ACCESS_COARSE_LOCATION'] &&
+            result['android.permission.ACCESS_FINE_LOCATION'] &&
+            result['android.permission.ACCESS_BACKGROUND_LOCATION'] === 'denied'
+          ) {
+            console.log('Permission: denied');
+            showLocationPermissionBlockedDialog();
+          }
+        })
+        .catch(error => {
+          console.log('ERROR: ', error);
+        });
     } catch (error) {
       console.error('Error requesting location permissions:', error);
     }
@@ -199,27 +204,18 @@ const Home = () => {
     const {delay} = taskDataArguments;
     await new Promise(async resolve => {
       for (let i = 0; BackgroundService.isRunning(); i++) {
+        console.log('Position: ' + i);
         Geolocation.getCurrentPosition(
           async position => {
             let latitude = parseFloat(position.coords.latitude);
             let longitude = parseFloat(position.coords.longitude);
             let value = await AsyncStorage.getItem('driverId');
-
-            console.log(
-              'Latitude: ',
-              latitude,
-              ' Longitude: ',
-              longitude,
-              ' DriverId: ',
-              value,
-            );
-
             sendDataToDatabase(latitude, longitude, value);
           },
           error => {
             if (error.code === NO_LOCATION_PROVIDER_AVAILABLE) {
               try {
-                console.log(error.code);
+                console.log(error);
                 RNAndroidSettingsTool.ACTION_LOCATION_SOURCE_SETTINGS();
               } catch (error) {
                 console.log('Settings: ', error);
@@ -227,8 +223,10 @@ const Home = () => {
             }
             console.log(error.message);
           },
+          // {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
         );
         await sleep(delay);
+        // }
       }
     });
   };
@@ -247,7 +245,8 @@ const Home = () => {
   };
 
   function sendDataToDatabase(latitude, longitude, value) {
-    console.log('Driver: ' + value);
+    console.log('Driver: ', value);
+    console.log('DATA: ', latitude, longitude, value);
     let date = moment(new Date()).format('yyyy-MM-DD');
     let month = moment().format('MMMM');
     let year = moment().format('YYYY');
@@ -256,9 +255,11 @@ const Home = () => {
     let latlng = '(' + latitude + ',' + longitude + ')';
     let modifiedValues;
     if (time === hour) {
+      console.log('IF TIME: ', time, 'HOURS: ', hour);
       latLngArr.push(latlng);
       modifiedValues = latLngArr.join('~');
     } else {
+      console.log('ELSE TIME: ', time, 'HOURS: ', hour);
       latLngArr = [];
       time = hour;
       latLngArr.push(latlng);
@@ -312,10 +313,21 @@ const Home = () => {
     `;
   }
 
-  function onMessage(data) {
-    // console.log(data.nativeEvent.data);
-    setDataFromReact(data.nativeEvent.data);
+  if (inPipMode) {
+    return (
+      <View style={{width: 250, height: 350}}>
+        <WebView
+          style={{width: 250, height: 350}}
+          source={{uri: 'http://192.168.31.248:3000/mobilescreen-calculation'}}
+        />
+      </View>
+    );
   }
+
+  // function onMessage(data) {
+  //   // console.log(data.nativeEvent.data);
+  //   setDataFromReact(data.nativeEvent.data);
+  // }
 
   return (
     <WebView
