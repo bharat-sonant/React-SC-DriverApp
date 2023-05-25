@@ -6,14 +6,6 @@ import {
   Text,
   View,
   Linking,
-  Button,
-  AppState,
-  ToastAndroid,
-  Dimensions,
-  BackHandler,
-  Platform,
-  AccessibilityInfo,
-  AccessibilityService,
 } from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {WebView} from 'react-native-webview';
@@ -21,7 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useBackHandler} from '@react-native-community/hooks';
 import Geolocation from '@react-native-community/geolocation';
 import BackgroundService from 'react-native-background-actions';
-import {get, ref, remove, set, update} from 'firebase/database';
+import {ref, set} from 'firebase/database';
 import {database} from '../Firebase';
 import RNAndroidSettingsTool from 'react-native-android-settings-tool';
 import moment from 'moment';
@@ -38,13 +30,10 @@ const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time));
 let latLngArr = [];
 let time = moment().format('hh:mm');
 const Home = () => {
-  const [show, setShow] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const webviewRef = useRef();
   const [driverID, setDriverId] = useState('');
-  const [count, setCount] = useState(0);
   const NO_LOCATION_PROVIDER_AVAILABLE = 2;
-  const [getDataFromReact, setDataFromReact] = useState('');
+  // const [getDataFromReact, setDataFromReact] = useState('');
   const inPipMode = usePipModeListener();
 
   function backActionHandler() {
@@ -75,7 +64,6 @@ const Home = () => {
 
   useEffect(() => {
     getData();
-    // alertBoxDialog();
   }, []);
 
   const getData = async () => {
