@@ -20,7 +20,6 @@ import moment from 'moment';
 import {getDistance} from 'geolib';
 import RNExitApp from 'react-native-exit-app';
 import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
-import VIForegroundService from '@voximplant/react-native-foreground-service';
 import PipHandler, {usePipModeListener} from 'react-native-pip-android';
 
 // import { requestBatteryPermission, registerBackgroundTask } from './BatteryPermission';

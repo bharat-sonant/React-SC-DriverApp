@@ -23,13 +23,14 @@ const Splash = () => {
   };
 
   return (
-    <View style={{flex: 1, justifyContent: 'center', backgroundColor: '#000'}}>
+    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <Image
         style={{
-          width: 400,
-          height: 400,
+          height:Dimensions.get("screen").height,
+          width:Dimensions.get("screen").width,
         }}
-        source={require('../Images/driver.png')}
+        source={require('../Images/preloader.gif')}
+      
       />
     </View>
   );

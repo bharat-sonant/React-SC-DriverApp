@@ -10,15 +10,18 @@ import {
   TouchableOpacity,
   View,
   Dimensions,
+  ScrollView,
+  TextInput,
+  ImageBackground
 } from 'react-native';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {database} from '../Firebase';
-import {child, get, ref} from 'firebase/database';
-import {ScrollView, TextInput} from 'react-native-gesture-handler';
-import {useBackHandler} from '@react-native-community/hooks';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { database } from '../Firebase';
+import { child, get, ref } from 'firebase/database';
+// import {ScrollView, TextInput} from 'react-native-gesture-handler';
+import { useBackHandler } from '@react-native-community/hooks';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Login = ({navigation}) => {
+const Login = ({ navigation }) => {
   const [userName, setUserName] = useState('');
   const [pass, setPass] = useState('');
   const [usernameError, setUsernameError] = useState('');
@@ -135,7 +138,7 @@ const Login = ({navigation}) => {
   const ActivityIndicatorElement = () => {
     //making a view to show to while loading the webpage
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <View style={styles.indicatorContainer}>
           <ActivityIndicator color="#000" size={50} />
           <Text
@@ -155,24 +158,26 @@ const Login = ({navigation}) => {
   return (
     <View style={styles.container}>
       {/* {show ? ( */}
-      <ScrollView
+      {/* <ScrollView
         style={{
           height: Dimensions.get('screen').height,
           width: Dimensions.get('screen').width,
-        }}>
-        <Image
-          style={styles.loginImage}
-          source={require('../Images/login-Image.png')}
-        />
+        }}> */}
+
+      <ImageBackground
+
+        style={styles.loginImage}
+        source={require('../Images/loginback.png')}>
+        <View style={styles.viewOne}>
+
+          <Text style={{ fontWeight: '700', fontSize: 30, color: '#000' }}>Hi,{"\n"}Welcome</Text>
+
+          <Text style={{ fontWeight: '700', fontSize: 28, alignContent: 'center', textAlign: 'center', marginTop: 85, color: '#00a2ed', marginRight: 20 }}>Login</Text>
+        </View>
         <View style={styles.inputStyle}>
-          <Image
-            style={styles.icon}
-            source={{
-              uri: 'https://static.vecteezy.com/system/resources/thumbnails/007/033/146/small/profile-icon-login-head-icon-vector.jpg',
-            }}
-          />
+
           <TextInput
-            style={{color: 'black', fontSize: 15, marginBottom: -10}}
+            style={{ color: 'black', fontSize: 17, }}
             maxLength={10}
             ref={usernameRef}
             autoFocus={false}
@@ -181,21 +186,16 @@ const Login = ({navigation}) => {
             onChangeText={setUserName}
           />
         </View>
-        <View style={{position: 'relative', left: 30}}>
-          <Text style={{color: 'red', fontSize: 13}}>
+        <View style={{ position: 'relative', left: 30, top: -7 }}>
+          <Text style={{ color: 'red', fontSize: 13 }}>
             {!userName.trim() ? usernameError : ''}
           </Text>
         </View>
         <View style={styles.inputStyle}>
-          <Image
-            style={styles.imageStyl}
-            source={{
-              uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8500uKjsVedMStg1isnwiq9CArOWUVwLLzwanyk5gp0DWPxIWmAtTfYMafLzWMq9xeak&usqp=CAU',
-            }}
-          />
+
           <TextInput
             placeholder="Password"
-            style={{color: 'black', fontSize: 15, marginBottom: -10}}
+            style={{ color: 'black', fontSize: 17, }}
             value={pass}
             ref={passRef}
             maxLength={4}
@@ -204,20 +204,20 @@ const Login = ({navigation}) => {
             secureTextEntry={true}
           />
         </View>
-        <View style={{position: 'relative', left: 30}}>
-          <Text style={{color: 'red', fontSize: 13}}>
+        <View style={{ position: 'relative', left: 30, top: -7 }}>
+          <Text style={{ color: 'red', fontSize: 13 }}>
             {!pass.trim() || pass.length < 4 || passError ? passError : ''}
           </Text>
         </View>
         {show ? (
-          <View style={{justifyContent: 'center', alignItems: 'center'}}>
+          <View style={{ justifyContent: 'center', alignItems: 'center' }}>
             <TouchableOpacity
               style={styles.buttonStyle}
               onPress={() => getLoginData()}>
               <Text
                 style={{
                   color: '#fff',
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: '700',
                   marginTop: -5,
                 }}>
@@ -228,7 +228,8 @@ const Login = ({navigation}) => {
         ) : (
           <ActivityIndicatorElement />
         )}
-      </ScrollView>
+      </ImageBackground>
+      {/* </ScrollView> */}
       {/* ) : ( */}
       {/* <ActivityIndicatorElement /> */}
       {/* )} */}
@@ -239,28 +240,28 @@ const Login = ({navigation}) => {
 export default Login;
 
 const styles = StyleSheet.create({
-  imageStyl: {
-    position: 'absolute',
-    width: 20,
-    height: 23,
-    bottom: 3,
-    left: 0,
-    borderRadius: 10,
-  },
-  icon: {
-    position: 'absolute',
-    width: 20,
-    height: 20,
-    bottom: 3,
-    left: 0,
-    borderRadius: 10,
-  },
+  // imageStyl: {
+  //   position: 'absolute',
+  //   width: 20,
+  //   height: 23,
+  //   bottom: 3,
+  //   left: 0,
+  //   borderRadius: 10,
+  // },
+  // icon: {
+  //   position: 'absolute',
+  //   width: 20,
+  //   height: 20,
+  //   bottom: 3,
+  //   left: 0,
+  //   borderRadius: 10,
+  // },
 
   buttonStyle: {
-    height: 45,
-    width: '85%',
+    height: 50,
+    width: '87%',
     backgroundColor: '#00a2ed',
-    marginVertical: 30,
+    marginVertical: 10,
     borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
@@ -268,28 +269,41 @@ const styles = StyleSheet.create({
 
   inputStyle: {
     borderColor: '#000',
-    borderBottomWidth: 0.5,
-    marginHorizontal: 30,
-    marginVertical: 8,
+    // borderBottomWidth: 0.5,
+
+    borderRadius: 6,
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    // marginVertical:8,
+    marginBottom: 7,
     paddingLeft: 23,
-    paddingTop: 10,
+    padding: 3,
+    textAlign: 'center',
     justifyContent: 'center',
+    // alignItems:'center',
+    shadowColor: 'black',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 1,
   },
 
-  image: {
-    width: 120,
-    height: 120,
-    width: '100%',
-    height: 60,
-    marginBottom: 20,
-    borderRadius: 75,
-    borderWidth: 1,
-    borderColor: 'green',
-  },
+  // image: {
+  //   width: 120,
+  //   height: 120,
+  //   width: '100%',
+  //   height: 60,
+  //   marginBottom: 20,
+  //   borderRadius: 75,
+  //   borderWidth: 1,
+  //   borderColor: 'green',
+  // },
 
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+// justifyContent:'center',
+// alignContent:'center'
+
   },
 
   loginBtn: {
@@ -297,13 +311,28 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   loginImage: {
-    height: 350,
+    height: Dimensions.get('screen').height,
     width: Dimensions.get('screen').width,
+    justifyContent: 'center',
+    paddingTop: 60,
+    alignContent:'center',
+    // position:'relative'
+    // flex: 2
+
+
   },
   indicatorContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    // justifyContent: 'center',
+    // alignItems: 'center',
     marginTop: 20,
   },
+  viewOne: {
+    width: '100%',
+    position: 'absolute',
+    // bottom:0
+    top: 40,
+    left: 20
+  }
+
 });
