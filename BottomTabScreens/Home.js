@@ -20,6 +20,7 @@ import moment from 'moment';
 import {getDistance} from 'geolib';
 import RNExitApp from 'react-native-exit-app';
 import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import VIForegroundService from '@voximplant/react-native-foreground-service';
 import PipHandler, {usePipModeListener} from 'react-native-pip-android';
 
 // import { requestBatteryPermission, registerBackgroundTask } from './BatteryPermission';
@@ -28,9 +29,12 @@ const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time));
 
 let latLngArr = [];
 let time = moment().format('hh:mm');
+let timeInterval;
 const Home = () => {
   const webviewRef = useRef();
   const [driverID, setDriverId] = useState('');
+  let [webStatus, setWebStatus] = useState('');
+  // const [load, setLoad] = useState(true);
   const NO_LOCATION_PROVIDER_AVAILABLE = 2;
   // const [getDataFromReact, setDataFromReact] = useState('');
   const inPipMode = usePipModeListener();
@@ -57,7 +61,7 @@ const Home = () => {
     if (value === null) {
       startBackgroundService();
     } else {
-      console.log('already started');
+      // console.log('already started');
     }
   }, []);
 
@@ -72,27 +76,11 @@ const Home = () => {
       if (value !== null && driverUsername !== null) {
         setDriverId(value);
         requestForPermission(value);
-        sendDatatoWeb(value, driverUsername);
       }
     } catch (e) {
       console.log(e);
     }
   };
-
-  function sendDatatoWeb(value, driverUsername) {
-    const timeInterval = setInterval(() => {
-      webviewRef.current?.injectJavaScript(
-        getInjectableJSMessage({
-          driverId: value,
-          driverUsername: driverUsername,
-        }),
-      );
-    }, 1000);
-
-    setTimeout(() => {
-      clearInterval(timeInterval);
-    }, 7000);
-  }
 
   const requestForPermission = async value => {
     try {
@@ -102,15 +90,17 @@ const Home = () => {
         PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
       ])
         .then(result => {
-          console.log('RESULT: ', result);
+          // console.log('RESULT: ', result);
           if (
             result['android.permission.ACCESS_COARSE_LOCATION'] &&
             result['android.permission.ACCESS_FINE_LOCATION'] &&
             result['android.permission.ACCESS_BACKGROUND_LOCATION'] ===
               'granted'
           ) {
-            console.log('granted');
-            getBacgroundServiceData();
+            // setLoad(false);
+            // console.log('granted');
+            getBacgroundServiceData(value);
+            sendDatatoWeb(value);
             // startBackgroundService();
             // fetchLocation(value);
           } else if (
@@ -119,14 +109,14 @@ const Home = () => {
             result['android.permission.ACCESS_BACKGROUND_LOCATION'] ===
               'never_ask_again'
           ) {
-            console.log('never_ask_again');
+            // console.log('never_ask_again');
             showLocationPermissionBlockedDialog();
           } else if (
             result['android.permission.ACCESS_COARSE_LOCATION'] &&
             result['android.permission.ACCESS_FINE_LOCATION'] &&
             result['android.permission.ACCESS_BACKGROUND_LOCATION'] === 'denied'
           ) {
-            console.log('Permission: denied');
+            // console.log('Permission: denied');
             showLocationPermissionBlockedDialog();
           }
         })
@@ -137,6 +127,24 @@ const Home = () => {
       console.error('Error requesting location permissions:', error);
     }
   };
+
+  function onMessage(data) {
+    let getData = data.nativeEvent.data;
+    if (getData !== null) {
+      clearInterval(timeInterval);
+      setWebStatus(getData);
+    }
+  }
+
+  function sendDatatoWeb(value) {
+    timeInterval = setInterval(() => {
+      webviewRef.current?.injectJavaScript(
+        getInjectableJSMessage({
+          driverId: value,
+        }),
+      );
+    }, 1000);
+  }
 
   const showLocationPermissionBlockedDialog = () => {
     Alert.alert(
@@ -191,7 +199,7 @@ const Home = () => {
     const {delay} = taskDataArguments;
     await new Promise(async resolve => {
       for (let i = 0; BackgroundService.isRunning(); i++) {
-        console.log('Position: ' + i);
+        // console.log('Position: ' + i);
         Geolocation.getCurrentPosition(
           async position => {
             let latitude = parseFloat(position.coords.latitude);
@@ -232,8 +240,8 @@ const Home = () => {
   };
 
   function sendDataToDatabase(latitude, longitude, value) {
-    console.log('Driver: ', value);
-    console.log('DATA: ', latitude, longitude, value);
+    // console.log('Driver: ', value);
+    // console.log('DATA: ', latitude, longitude, value);
     let date = moment(new Date()).format('yyyy-MM-DD');
     let month = moment().format('MMMM');
     let year = moment().format('YYYY');
@@ -242,11 +250,11 @@ const Home = () => {
     let latlng = '(' + latitude + ',' + longitude + ')';
     let modifiedValues;
     if (time === hour) {
-      console.log('IF TIME: ', time, 'HOURS: ', hour);
+      // console.log('IF TIME: ', time, 'HOURS: ', hour);
       latLngArr.push(latlng);
       modifiedValues = latLngArr.join('~');
     } else {
-      console.log('ELSE TIME: ', time, 'HOURS: ', hour);
+      // console.log('ELSE TIME: ', time, 'HOURS: ', hour);
       latLngArr = [];
       time = hour;
       latLngArr.push(latlng);
@@ -290,7 +298,6 @@ const Home = () => {
   }
 
   function getInjectableJSMessage(message) {
-    // console.log(message);
     return `
       (function() {
         document.dispatchEvent(new MessageEvent('message', {
@@ -311,11 +318,6 @@ const Home = () => {
     );
   }
 
-  // function onMessage(data) {
-  //   // console.log(data.nativeEvent.data);
-  //   setDataFromReact(data.nativeEvent.data);
-  // }
-
   return (
     <WebView
       ref={webviewRef}
@@ -324,7 +326,7 @@ const Home = () => {
       renderLoading={ActivityIndicatorElement}
       startInLoadingState={true}
       setBuiltInZoomControls={false}
-      // onMessage={onMessage}
+      onMessage={onMessage}
       // scalesPageToFit={true}
     />
   );
