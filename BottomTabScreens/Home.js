@@ -312,7 +312,7 @@ const Home = () => {
       <View style={{width: 250, height: 350}}>
         <WebView
           style={{width: 250, height: 350}}
-          source={{uri: 'http://192.168.31.248:3000/mobilescreen-calculation'}}
+          source={{uri: 'https://kabadiapplication.web.app/mobilescreen-calculation'}}
         />
       </View>
     );
@@ -321,8 +321,7 @@ const Home = () => {
   return (
     <WebView
       ref={webviewRef}
-      // source={{uri: 'https://webviewpages.web.app/firstscreen'}}
-      source={{uri: 'http://192.168.31.248:3000/mobilescreen-calculation'}}
+      source={{uri: 'https://kabadiapplication.web.app/mobilescreen-calculation'}}
       renderLoading={ActivityIndicatorElement}
       startInLoadingState={true}
       setBuiltInZoomControls={false}

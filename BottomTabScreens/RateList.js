@@ -22,9 +22,7 @@ const RateList = props => {
   return (
     <View style={{flex: 1}}>
       <WebView
-        // ref={webviewRef}
-        // source={{uri: 'https://webviewpages.web.app/firstscreen'}}
-        source={{uri: 'http://192.168.31.248:3000/mobilescreen-rate-list'}}
+        source={{uri: 'https://kabadiapplication.web.app/mobilescreen-rate-list'}}
         renderLoading={ActivityIndicatorElement}
         setBuiltInZoomControls={false}
         startInLoadingState={true}
