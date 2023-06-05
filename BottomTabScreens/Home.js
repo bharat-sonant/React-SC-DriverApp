@@ -7,21 +7,21 @@ import {
   View,
   Linking,
 } from 'react-native';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {WebView} from 'react-native-webview';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useBackHandler} from '@react-native-community/hooks';
+import { useBackHandler } from '@react-native-community/hooks';
 import Geolocation from '@react-native-community/geolocation';
 import BackgroundService from 'react-native-background-actions';
-import {ref, set} from 'firebase/database';
-import {database} from '../Firebase';
+import { ref, set } from 'firebase/database';
+import { database } from '../Firebase';
 import RNAndroidSettingsTool from 'react-native-android-settings-tool';
 import moment from 'moment';
-import {getDistance} from 'geolib';
+import { getDistance } from 'geolib';
 import RNExitApp from 'react-native-exit-app';
-import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import VIForegroundService from '@voximplant/react-native-foreground-service';
-import PipHandler, {usePipModeListener} from 'react-native-pip-android';
+import PipHandler, { usePipModeListener } from 'react-native-pip-android';
 
 // import { requestBatteryPermission, registerBackgroundTask } from './BatteryPermission';
 
@@ -45,7 +45,7 @@ const Home = () => {
         text: 'Cancel',
         style: 'cancel',
       },
-      {text: 'YES', onPress: () => PipHandler.enterPipMode(300, 400)},
+      { text: 'YES', onPress: () => PipHandler.enterPipMode(300, 400) },
     ]);
     return true;
   }
@@ -74,15 +74,16 @@ const Home = () => {
       const value = await AsyncStorage.getItem('driverId');
       const driverUsername = await AsyncStorage.getItem('username');
       if (value !== null && driverUsername !== null) {
+        console.log("driverId: ", value, " driverser: ", driverUsername);
         setDriverId(value);
-        requestForPermission(value);
+        requestForPermission(value, driverUsername);
       }
     } catch (e) {
       console.log(e);
     }
   };
 
-  const requestForPermission = async value => {
+  const requestForPermission = async (value, driverUsername) => {
     try {
       await PermissionsAndroid.requestMultiple([
         PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
@@ -95,19 +96,19 @@ const Home = () => {
             result['android.permission.ACCESS_COARSE_LOCATION'] &&
             result['android.permission.ACCESS_FINE_LOCATION'] &&
             result['android.permission.ACCESS_BACKGROUND_LOCATION'] ===
-              'granted'
+            'granted'
           ) {
             // setLoad(false);
             // console.log('granted');
             getBacgroundServiceData(value);
-            sendDatatoWeb(value);
+            sendDatatoWeb(value, driverUsername);
             // startBackgroundService();
             // fetchLocation(value);
           } else if (
             result['android.permission.ACCESS_COARSE_LOCATION'] &&
             result['android.permission.ACCESS_FINE_LOCATION'] &&
             result['android.permission.ACCESS_BACKGROUND_LOCATION'] ===
-              'never_ask_again'
+            'never_ask_again'
           ) {
             // console.log('never_ask_again');
             showLocationPermissionBlockedDialog();
@@ -131,16 +132,19 @@ const Home = () => {
   function onMessage(data) {
     let getData = data.nativeEvent.data;
     if (getData !== null) {
+      console.log("stop")
       clearInterval(timeInterval);
       setWebStatus(getData);
     }
   }
 
-  function sendDatatoWeb(value) {
+  function sendDatatoWeb(value, driverUsername) {
     timeInterval = setInterval(() => {
+      console.log("enter")
       webviewRef.current?.injectJavaScript(
         getInjectableJSMessage({
           driverId: value,
+          driverUsername: driverUsername,
         }),
       );
     }, 1000);
@@ -196,7 +200,7 @@ const Home = () => {
   // };
 
   const veryIntensiveTask = async taskDataArguments => {
-    const {delay} = taskDataArguments;
+    const { delay } = taskDataArguments;
     await new Promise(async resolve => {
       for (let i = 0; BackgroundService.isRunning(); i++) {
         // console.log('Position: ' + i);
@@ -272,23 +276,23 @@ const Home = () => {
     var dlatitude = dlat.replace('(', '');
     var dlongutitue = dlng.replace(')', '');
     var dis = getDistance(
-      {latitude: slatitude, longitude: slongutitue},
-      {latitude: dlatitude, longitude: dlongutitue},
+      { latitude: slatitude, longitude: slongutitue },
+      { latitude: dlatitude, longitude: dlongutitue },
     );
 
     set(
       ref(
         database,
         'TravelPath/' +
-          value +
-          '/' +
-          year +
-          '/' +
-          month +
-          '/' +
-          date +
-          '/' +
-          hour,
+        value +
+        '/' +
+        year +
+        '/' +
+        month +
+        '/' +
+        date +
+        '/' +
+        hour,
       ),
       {
         'distance-in-meter': dis,
@@ -309,10 +313,11 @@ const Home = () => {
 
   if (inPipMode) {
     return (
-      <View style={{width: 250, height: 350}}>
+      <View style={{ width: 250, height: 350 }}>
         <WebView
-          style={{width: 250, height: 350}}
+          style={{ width: 250, height: 350 }}
           source={{uri: 'https://kabadiapplication.web.app/mobilescreen-calculation'}}
+          // source={{ uri: 'http://192.168.31.248:3000/mobilescreen-calculation' }}
         />
       </View>
     );
@@ -321,19 +326,20 @@ const Home = () => {
   return (
     <WebView
       ref={webviewRef}
+      // source={{ uri: 'http://192.168.31.248:3000/mobilescreen-calculation' }}
       source={{uri: 'https://kabadiapplication.web.app/mobilescreen-calculation'}}
       renderLoading={ActivityIndicatorElement}
       startInLoadingState={true}
       setBuiltInZoomControls={false}
       onMessage={onMessage}
-      // scalesPageToFit={true}
+    // scalesPageToFit={true}
     />
   );
 };
 
 const ActivityIndicatorElement = () => {
   return (
-    <View style={{flex: 15, justifyContent: 'center', alignItems: 'center'}}>
+    <View style={{ flex: 15, justifyContent: 'center', alignItems: 'center' }}>
       <View style={styles.indicatorContainer}>
         <ActivityIndicator color="#000" size={50} />
         <Text

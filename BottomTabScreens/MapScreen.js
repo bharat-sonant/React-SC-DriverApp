@@ -58,7 +58,8 @@ const MapScreen = () => {
         width: Dimensions.get('screen').width,
       }}
       ref={webviewRef}
-      source={{uri: 'https://kabadiapplication.web.app/mobilescreen-mapscreen'}}
+      // source={{uri: 'http://192.168.31.248:3000/mobilescreen-mapscreen'}}
+        source={{uri: 'https://kabadiapplication.web.app/mobilescreen-mapscreen'}}
       renderLoading={ActivityIndicatorElement}
       setBuiltInZoomControls={false}
       startInLoadingState={true}

@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Login from './Screens/Login';
 import Splash from './Screens/Splash';
 import Home from './BottomTabScreens/Home';
@@ -14,7 +14,7 @@ const Tab = createBottomTabNavigator();
 const App = () => {
   const BottomTabScreen = () => {
     return (
-      <Tab.Navigator screenOptions={{headerShown: true}}>
+      <Tab.Navigator screenOptions={{ headerShown: false }}>
         <Tab.Screen name="Home" component={Home} />
         <Tab.Screen name="Ratelist" component={Logout} />
         <Tab.Screen name="Travel" component={MapScreen} />
@@ -28,17 +28,17 @@ const App = () => {
         <Stack.Screen
           name="Splash"
           component={Splash}
-          options={{headerShown: false}}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Login"
           component={Login}
-          options={{headerShown: false}}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="BottomTabScreen"
           component={BottomTabScreen}
-          options={{headerShown: false, headerBackVisible: false}}
+          options={{ headerShown: false, headerBackVisible: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>
