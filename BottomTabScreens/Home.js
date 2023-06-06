@@ -28,7 +28,7 @@ import PipHandler, { usePipModeListener } from 'react-native-pip-android';
 const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time));
 
 let latLngArr = [];
-let time = moment().format('hh:mm');
+let time = moment().format('kk:mm');
 let timeInterval;
 const Home = () => {
   const webviewRef = useRef();
@@ -249,7 +249,7 @@ const Home = () => {
     let date = moment(new Date()).format('yyyy-MM-DD');
     let month = moment().format('MMMM');
     let year = moment().format('YYYY');
-    let hour = moment().format('hh:mm');
+    let hour = moment().format('kk:mm');
 
     let latlng = '(' + latitude + ',' + longitude + ')';
     let modifiedValues;
@@ -316,8 +316,8 @@ const Home = () => {
       <View style={{ width: 250, height: 350 }}>
         <WebView
           style={{ width: 250, height: 350 }}
-          source={{uri: 'https://kabadiapplication.web.app/mobilescreen-calculation'}}
-          // source={{ uri: 'http://192.168.31.248:3000/mobilescreen-calculation' }}
+          source={{ uri: 'https://kabadiapplication.web.app/mobilescreen-calculation' }}
+        // source={{ uri: 'http://192.168.31.248:3000/mobilescreen-calculation' }}
         />
       </View>
     );
@@ -327,7 +327,7 @@ const Home = () => {
     <WebView
       ref={webviewRef}
       // source={{ uri: 'http://192.168.31.248:3000/mobilescreen-calculation' }}
-      source={{uri: 'https://kabadiapplication.web.app/mobilescreen-calculation'}}
+      source={{ uri: 'https://kabadiapplication.web.app/mobilescreen-calculation' }}
       renderLoading={ActivityIndicatorElement}
       startInLoadingState={true}
       setBuiltInZoomControls={false}
