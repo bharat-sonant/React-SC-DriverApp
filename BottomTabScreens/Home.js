@@ -28,7 +28,7 @@ import PipHandler, { usePipModeListener } from 'react-native-pip-android';
 const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time));
 
 let latLngArr = [];
-let time = moment().format('kk:mm');
+let time = moment().format('HH:mm');
 let timeInterval;
 const Home = () => {
   const webviewRef = useRef();
@@ -249,7 +249,7 @@ const Home = () => {
     let date = moment(new Date()).format('yyyy-MM-DD');
     let month = moment().format('MMMM');
     let year = moment().format('YYYY');
-    let hour = moment().format('kk:mm');
+    let hour = moment().format('HH:mm');
 
     let latlng = '(' + latitude + ',' + longitude + ')';
     let modifiedValues;
